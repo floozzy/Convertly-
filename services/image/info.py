@@ -37,6 +37,11 @@ from services.image.ocr import (
 )
 
 
+from services.image.faces import (
+    detect_faces
+)
+
+
 
 def image_info(path):
 
@@ -57,9 +62,8 @@ def image_info(path):
 
 
         # =====================
-        # FILE INFORMATION
+        # FILE
         # =====================
-
 
         "name":
 
@@ -86,9 +90,8 @@ def image_info(path):
 
 
         # =====================
-        # IMAGE INFORMATION
+        # IMAGE
         # =====================
-
 
         "width":
 
@@ -115,9 +118,8 @@ def image_info(path):
 
 
         # =====================
-        # SECURITY
+        # HASHES
         # =====================
-
 
         "hashes":
 
@@ -131,7 +133,6 @@ def image_info(path):
         # DATES
         # =====================
 
-
         "dates":
 
             get_file_dates(
@@ -141,9 +142,8 @@ def image_info(path):
 
 
         # =====================
-        # METADATA / EXIF
+        # METADATA
         # =====================
-
 
         "metadata":
 
@@ -157,7 +157,6 @@ def image_info(path):
         # COLORS
         # =====================
 
-
         "colors":
 
             analyze_colors(
@@ -169,7 +168,6 @@ def image_info(path):
         # =====================
         # QUALITY
         # =====================
-
 
         "quality":
 
@@ -183,7 +181,6 @@ def image_info(path):
         # CAMERA
         # =====================
 
-
         "camera":
 
             get_camera_info(
@@ -196,7 +193,6 @@ def image_info(path):
         # GPS
         # =====================
 
-
         "gps":
 
             get_gps_info(
@@ -206,13 +202,24 @@ def image_info(path):
 
 
         # =====================
-        # OCR TEXT
+        # OCR
         # =====================
-
 
         "ocr":
 
             extract_text(
+                path
+            ),
+
+
+
+        # =====================
+        # FACES
+        # =====================
+
+        "faces":
+
+            detect_faces(
                 path
             )
 
