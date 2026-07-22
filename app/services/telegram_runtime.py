@@ -10,7 +10,7 @@ from app.services.token_service import get_bot_token
 def configure_runtime() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
-    base_dir = Path(__file__).resolve().parent.parent
+    base_dir = Path(__file__).resolve().parents[2]
     env_path = base_dir / ".env"
     if env_path.exists():
         for line in env_path.read_text(encoding="utf-8").splitlines():

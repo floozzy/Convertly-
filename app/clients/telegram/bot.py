@@ -23,7 +23,12 @@ logger = logging.getLogger(__name__)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(build_start_message(), reply_markup=build_main_menu())
+    message = update.message
+    if message is None:
+        return
+
+    text = build_start_message()
+    await message.reply_text(text, reply_markup=build_main_menu())
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
