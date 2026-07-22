@@ -29,7 +29,7 @@ TOKEN = os.getenv(
 
 if not TOKEN:
 
-    TOKEN = "YOUR_BOT_TOKEN"
+    TOKEN = "8831427693:AAED6ZtuPdcZnvsAvku-DPNSZ_QsBNzrc0I"
 
 
 
