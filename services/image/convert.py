@@ -2,45 +2,33 @@ from PIL import Image
 from pathlib import Path
 
 
-SUPPORTED = {
-    "jpg",
-    "jpeg",
-    "png",
-    "webp",
-    "bmp",
-    "tiff",
-    "ico"
-}
-
-
 def convert_image(
     input_path,
     output_format
 ):
 
-    path = Path(input_path)
+    image = Image.open(input_path)
 
-    image = Image.open(path)
+    output_format = output_format.lower()
 
-    output = path.with_suffix(
-        "." + output_format.lower()
+    output_path = Path(input_path).with_suffix(
+        "." + output_format
     )
 
 
-    if output_format.lower() in (
+    if output_format in [
         "jpg",
         "jpeg"
-    ):
-
+    ]:
         image = image.convert(
             "RGB"
         )
 
 
     image.save(
-        output,
+        output_path,
         output_format.upper()
     )
 
 
-    return str(output)
+    return str(output_path)
