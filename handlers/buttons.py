@@ -28,6 +28,8 @@ async def button_handler(
 
 
     data = query.data
+    
+    print("BUTTON PRESSED:", data)
 
 
 
