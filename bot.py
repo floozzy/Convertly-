@@ -9,6 +9,7 @@ from config import TOKEN
 
 from handlers.start import start_command
 from handlers.files import file_handler
+from handlers.buttons import button_handler
 
 
 def main():
