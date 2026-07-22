@@ -3,7 +3,9 @@ import logging
 from telegram.ext import (
     Application,
     CommandHandler,
-    CallbackQueryHandler
+    CallbackQueryHandler,
+    MessageHandler,
+    filters
 )
 
 from config import TOKEN
@@ -13,6 +15,7 @@ from database.models import init_db
 from handlers.start import start_command
 from handlers.buttons import button_handler
 from handlers.profile import profile_command
+from handlers.files import file_handler
 
 
 logging.basicConfig(
@@ -22,11 +25,7 @@ logging.basicConfig(
 
 def main():
 
-    print("🔄 Запуск базы данных...")
-
     init_db()
-
-    print("✅ База данных готова")
 
 
     app = (
@@ -37,7 +36,6 @@ def main():
     )
 
 
-    # Команда /start
     app.add_handler(
         CommandHandler(
             "start",
@@ -46,7 +44,6 @@ def main():
     )
 
 
-    # Команда /profile
     app.add_handler(
         CommandHandler(
             "profile",
@@ -55,10 +52,17 @@ def main():
     )
 
 
-    # Кнопки меню
     app.add_handler(
         CallbackQueryHandler(
             button_handler
+        )
+    )
+
+
+    app.add_handler(
+        MessageHandler(
+            filters.Document.ALL,
+            file_handler
         )
     )
 
