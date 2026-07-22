@@ -1,387 +1,337 @@
 import os
+from pathlib import Path
 
+
+from telegram import Update
 from telegram.ext import ContextTypes
 
-from services.image.compress import compress_image
-from services.image.convert import convert_image
+
+
 from services.image.info import image_info
 
-from database.history import add_history
+
+# ==========================
+# STORAGE
+# ==========================
+
+
+LAST_IMAGES = {}
+
 
 
 UPLOAD_DIR = "files/uploads"
 
+PROCESSED_DIR = "files/processed"
 
 
-def get_last_image(user_id):
 
-    if not os.path.exists(
-        UPLOAD_DIR
-    ):
-        return None
-
-
-    files = [
-
-        f
-        for f in os.listdir(
-            UPLOAD_DIR
-        )
-
-        if f.startswith(
-            str(user_id)
-        )
-
-    ]
+os.makedirs(
+    UPLOAD_DIR,
+    exist_ok=True
+)
 
 
-    if not files:
+os.makedirs(
+    PROCESSED_DIR,
+    exist_ok=True
+)
 
-        return None
 
 
-    files.sort(
-        key=lambda x: os.path.getmtime(
-            os.path.join(
-                UPLOAD_DIR,
-                x
-            )
-        )
+
+def save_last_image(
+
+    user_id,
+
+    path
+
+):
+
+    LAST_IMAGES[user_id] = path
+
+
+
+
+def get_last_image(
+
+    user_id
+
+):
+
+    return LAST_IMAGES.get(
+        user_id
     )
 
 
-    return os.path.join(
+
+
+
+# ==========================
+# PHOTO HANDLER
+# ==========================
+
+
+async def photo_handler(
+
+    update: Update,
+
+    context: ContextTypes.DEFAULT_TYPE
+
+):
+
+
+    user_id = update.effective_user.id
+
+
+
+    photo = update.message.photo[-1]
+
+
+
+    file = await context.bot.get_file(
+
+        photo.id
+
+    )
+
+
+
+    filename = (
+
+        f"{user_id}_"
+
+        f"{photo.id}.jpg"
+
+    )
+
+
+
+    path = os.path.join(
+
         UPLOAD_DIR,
-        files[-1]
+
+        filename
+
     )
 
 
 
-async def image_compress_action(
-    update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+    await file.download_to_drive(
 
-    query = update.callback_query
-
-    await query.answer()
-
-
-    path = get_last_image(
-        query.from_user.id
-    )
-
-
-    if not path:
-
-        await query.message.reply_text(
-            "❌ Фото не найдено."
-        )
-
-        return
-
-
-
-    await query.message.reply_text(
-        "📦 Сжимаю изображение..."
-    )
-
-
-    result = compress_image(
         path
+
     )
 
 
-    add_history(
-        query.from_user.id,
-        path,
-        "Сжатие изображения"
+
+    save_last_image(
+
+        user_id,
+
+        path
+
     )
 
 
-    with open(
-        result,
-        "rb"
-    ) as file:
 
+    await update.message.reply_text(
 
-        await query.message.reply_document(
-            document=file,
-            caption="✅ Изображение сжато"
-        )
+        "✅ Фото сохранено.\n\n"
+        "Выберите действие:",
 
-
-
-async def image_convert_action(
-    update,
-    context: ContextTypes.DEFAULT_TYPE
-):
-
-    query = update.callback_query
-
-    await query.answer()
-
-
-    path = get_last_image(
-        query.from_user.id
     )
 
 
-    if not path:
 
-        await query.message.reply_text(
-            "❌ Фото не найдено."
-        )
+    print(
 
-        return
+        "IMAGE SAVED:",
 
+        path
 
-
-    await query.message.reply_text(
-        "🔄 Конвертирую изображение..."
     )
 
 
-    result = convert_image(
-        path,
-        "png"
-    )
 
 
-    add_history(
-        query.from_user.id,
-        path,
-        "Конвертация PNG"
-    )
 
-
-    with open(
-        result,
-        "rb"
-    ) as file:
-
-
-        await query.message.reply_document(
-            document=file,
-            caption="✅ Конвертация завершена"
-        )
-
+# ==========================
+# IMAGE INFO
+# ==========================
 
 
 async def image_info_action(
+
     update,
-    context: ContextTypes.DEFAULT_TYPE
+
+    context
+
 ):
+
 
     query = update.callback_query
 
-    await query.answer()
+
+
+    user_id = query.from_user.id
+
 
 
     path = get_last_image(
-        query.from_user.id
+
+        user_id
+
     )
+
 
 
     if not path:
 
+
         await query.message.reply_text(
-            "❌ Фото не найдено."
+
+            "❌ Сначала отправьте фото."
+
         )
 
         return
 
 
 
-    await query.message.reply_text(
-        "🔍 Анализирую изображение..."
-    )
+    try:
 
 
-    data = image_info(
-        path
-    )
+        data = image_info(
 
+            path
 
-    text = (
-        "📊 <b>Convertly Image Inspector Pro</b>\n\n"
-    )
-
-
-    # FILE
-
-    text += (
-        "━━━━━━━━━━━━━━\n"
-        "🗂 <b>Файл</b>\n"
-        f"📄 {data['name']}\n"
-        f"🖼 Формат: {data['format']}\n"
-        f"🎨 Режим: {data['mode']}\n"
-        f"💾 Размер: {data['size_mb']} MB\n\n"
-    )
-
-
-    # IMAGE
-
-    text += (
-        "━━━━━━━━━━━━━━\n"
-        "📐 <b>Изображение</b>\n"
-        f"↔️ {data['width']} px\n"
-        f"↕️ {data['height']} px\n"
-        f"🔢 {data['pixels']:,} пикселей\n"
-        f"📏 Соотношение: {data['ratio']}\n\n"
-    )
-
-
-    # COLORS
-
-    colors = data.get(
-        "colors"
-    )
-
-
-    if colors:
-
-        text += (
-            "━━━━━━━━━━━━━━\n"
-            "🎨 <b>Цветовой анализ</b>\n"
-            f"Средний цвет: {colors['average_color']}\n"
-            f"☀ Яркость: {colors['brightness']}\n"
-            f"◼ Контраст: {colors['contrast']}\n"
-            f"🌈 Насыщенность: {colors['saturation']}\n\n"
-        )
-
-
-        text += "🎨 Топ цветов:\n"
-
-
-        for color in colors["popular_colors"]:
-
-            text += (
-                f"{color['hex']} — "
-                f"{color['percent']}%\n"
-            )
-
-
-    # QUALITY
-
-    quality = data.get(
-        "quality"
-    )
-
-
-    if quality:
-
-        text += (
-            "\n━━━━━━━━━━━━━━\n"
-            "🧠 <b>Качество</b>\n"
-            f"⭐ {quality['score']}/100\n"
-            f"{quality['verdict']}\n"
-            f"🔍 Резкость: {quality['sharpness']}\n"
-            f"☀ Свет: {quality['light_status']}\n"
-            f"🌫 Шум: {quality['noise']}\n\n"
         )
 
 
 
-    # CAMERA
+        await query.message.reply_text(
 
-    camera = data.get(
-        "camera"
+            data
+
+        )
+
+
+
+    except Exception as e:
+
+
+        await query.message.reply_text(
+
+            "❌ Ошибка анализа фото:\n"
+
+            f"{e}"
+
+        )
+
+
+
+
+
+# ==========================
+# CONVERT
+# ==========================
+
+
+async def image_convert_action(
+
+    update,
+
+    context
+
+):
+
+
+    query = update.callback_query
+
+
+
+    user_id = query.from_user.id
+
+
+
+    path = get_last_image(
+
+        user_id
+
     )
 
 
-    if camera:
+
+    if not path:
 
 
-        text += (
-            "━━━━━━━━━━━━━━\n"
-            "📷 <b>Камера</b>\n"
-            f"🏭 Производитель: {camera['maker']}\n"
-            f"📱 Модель: {camera['model']}\n"
-            f"🔭 Объектив: {camera['lens']}\n"
-            f"ISO: {camera['iso']}\n"
-            f"Выдержка: {camera['shutter']}\n"
-            f"Диафрагма: {camera['aperture']}\n"
-            f"Фокус: {camera['focal']}\n\n"
+        await query.message.reply_text(
+
+            "❌ Сначала отправьте фото."
+
         )
 
+        return
 
-
-    # GPS
-
-    gps = data.get(
-        "gps"
-    )
-
-
-    if gps:
-
-
-        text += (
-            "━━━━━━━━━━━━━━\n"
-            "🌍 <b>GPS Intelligence</b>\n"
-            f"📍 {gps['latitude']}, {gps['longitude']}\n"
-        )
-
-
-        if "altitude" in gps:
-
-            text += (
-                f"⛰ Высота: {gps['altitude']} м\n"
-            )
-
-
-        if "location" in gps:
-
-
-            loc = gps["location"]
-
-
-            text += (
-                "\n🏙 <b>Место:</b>\n"
-                f"🌎 {loc['country']}\n"
-                f"🏙 {loc['city']}\n"
-                f"📌 {loc['district']}\n"
-                f"🛣 {loc['road']}\n"
-            )
-
-
-        text += (
-            "\n🗺 Карта:\n"
-            f"{gps['maps']}\n"
-        )
-
-
-
-    else:
-
-        text += (
-            "\n━━━━━━━━━━━━━━\n"
-            "🌍 GPS: отсутствует\n"
-        )
-
-
-
-    # HASHES
-
-    hashes = data.get(
-        "hashes"
-    )
-
-
-    if hashes:
-
-
-        text += (
-            "\n━━━━━━━━━━━━━━\n"
-            "🔐 <b>Хэши</b>\n"
-            f"MD5:\n<code>{hashes['md5']}</code>\n\n"
-            f"SHA256:\n<code>{hashes['sha256']}</code>\n"
-        )
 
 
 
     await query.message.reply_text(
-        text,
-        parse_mode="HTML"
+
+        "🔄 Конвертация пока подключается."
+
+    )
+
+
+
+
+
+# ==========================
+# COMPRESS
+# ==========================
+
+
+async def image_compress_action(
+
+    update,
+
+    context
+
+):
+
+
+    query = update.callback_query
+
+
+
+    user_id = query.from_user.id
+
+
+
+    path = get_last_image(
+
+        user_id
+
+    )
+
+
+
+    if not path:
+
+
+        await query.message.reply_text(
+
+            "❌ Сначала отправьте фото."
+
+        )
+
+        return
+
+
+
+
+    await query.message.reply_text(
+
+        "🗜 Сжатие пока подключается."
+
         )
