@@ -8,6 +8,10 @@ from services.image.metadata import (
     get_metadata
 )
 
+from services.image.colors import (
+    analyze_colors
+)
+
 
 
 def image_info(path):
@@ -25,29 +29,35 @@ def image_info(path):
     )
 
 
-    result = {
+    return {
 
         "name":
+
             Path(path).name,
 
 
         "format":
+
             image.format,
 
 
         "mode":
+
             image.mode,
 
 
         "width":
+
             width,
 
 
         "height":
+
             height,
 
 
         "pixels":
+
             width * height,
 
 
@@ -85,9 +95,13 @@ def image_info(path):
 
             get_metadata(
                 path
+            ),
+
+
+        "colors":
+
+            analyze_colors(
+                path
             )
 
     }
-
-
-    return result
