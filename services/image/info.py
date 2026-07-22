@@ -2,7 +2,9 @@ from PIL import Image
 from pathlib import Path
 import os
 
+
 from services.image.hashes import calculate_hashes
+
 from services.image.metadata import (
     get_file_dates,
     get_metadata
@@ -10,6 +12,10 @@ from services.image.metadata import (
 
 from services.image.colors import (
     analyze_colors
+)
+
+from services.image.quality import (
+    analyze_quality
 )
 
 
@@ -31,6 +37,9 @@ def image_info(path):
 
     return {
 
+
+        # Файл
+
         "name":
 
             Path(path).name,
@@ -45,6 +54,17 @@ def image_info(path):
 
             image.mode,
 
+
+        "size_mb":
+
+            round(
+                file_size / 1024 / 1024,
+                2
+            ),
+
+
+
+        # Размеры
 
         "width":
 
@@ -69,13 +89,8 @@ def image_info(path):
             ),
 
 
-        "size_mb":
 
-            round(
-                file_size / 1024 / 1024,
-                2
-            ),
-
+        # Хэши
 
         "hashes":
 
@@ -84,12 +99,18 @@ def image_info(path):
             ),
 
 
+
+        # Даты
+
         "dates":
 
             get_file_dates(
                 path
             ),
 
+
+
+        # EXIF + Metadata
 
         "metadata":
 
@@ -98,9 +119,22 @@ def image_info(path):
             ),
 
 
+
+        # Цвет
+
         "colors":
 
             analyze_colors(
+                path
+            ),
+
+
+
+        # Качество
+
+        "quality":
+
+            analyze_quality(
                 path
             )
 
