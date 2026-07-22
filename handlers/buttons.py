@@ -1,7 +1,11 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from handlers.convert import convert_menu
+from utils.state import get_file
+from services.image_tools import (
+    convert_image,
+    compress_image
+)
 
 
 async def button_handler(
@@ -14,29 +18,61 @@ async def button_handler(
     await query.answer()
 
 
-    if query.data == "convert":
+    user_id = query.from_user.id
 
-        await convert_menu(
-            update,
-            context
+
+    path = get_file(user_id)
+
+
+    if query.data in [
+        "jpg_png",
+        "png_jpg",
+        "compress"
+    ]:
+
+
+        if not path:
+
+            await query.edit_message_text(
+                "❌ Сначала отправьте файл."
+            )
+
+            return
+
+
+    if query.data == "jpg_png":
+
+        result = convert_image(
+            path,
+            "png"
+        )
+
+        await query.message.reply_document(
+            document=open(result, "rb"),
+            caption="✅ JPG → PNG готово!"
         )
 
 
-    elif query.data == "profile":
+    elif query.data == "png_jpg":
 
-        await query.edit_message_text(
-            "👤 Профиль\n\n"
-            "Файлов обработано: 0\n"
-            "Статус: Free"
+        result = convert_image(
+            path,
+            "jpg"
+        )
+
+        await query.message.reply_document(
+            document=open(result, "rb"),
+            caption="✅ PNG → JPG готово!"
         )
 
 
-    elif query.data == "help":
+    elif query.data == "compress":
 
-        await query.edit_message_text(
-            "ℹ️ Convertly 3.1\n\n"
-            "Поддерживаемые функции:\n"
-            "🖼 Изображения\n"
-            "📄 PDF (скоро)\n"
-            "🎵 Аудио (скоро)"
+        result = compress_image(
+            path
+        )
+
+        await query.message.reply_document(
+            document=open(result, "rb"),
+            caption="✅ Изображение сжато!"
         )
