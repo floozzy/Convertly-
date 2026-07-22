@@ -16,6 +16,7 @@ from handlers.start import start_command
 from handlers.buttons import button_handler
 from handlers.profile import profile_command
 from handlers.files import file_handler
+from handlers.image_menu import image_menu
 
 
 logging.basicConfig(
