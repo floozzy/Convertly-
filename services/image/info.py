@@ -18,6 +18,10 @@ from services.image.quality import (
     analyze_quality
 )
 
+from services.image.camera import (
+    get_camera_info
+)
+
 
 
 def image_info(path):
@@ -37,8 +41,6 @@ def image_info(path):
 
     return {
 
-
-        # Файл
 
         "name":
 
@@ -64,8 +66,6 @@ def image_info(path):
 
 
 
-        # Размеры
-
         "width":
 
             width,
@@ -90,8 +90,6 @@ def image_info(path):
 
 
 
-        # Хэши
-
         "hashes":
 
             calculate_hashes(
@@ -99,8 +97,6 @@ def image_info(path):
             ),
 
 
-
-        # Даты
 
         "dates":
 
@@ -110,8 +106,6 @@ def image_info(path):
 
 
 
-        # EXIF + Metadata
-
         "metadata":
 
             get_metadata(
@@ -119,8 +113,6 @@ def image_info(path):
             ),
 
 
-
-        # Цвет
 
         "colors":
 
@@ -130,11 +122,17 @@ def image_info(path):
 
 
 
-        # Качество
-
         "quality":
 
             analyze_quality(
+                path
+            ),
+
+
+
+        "camera":
+
+            get_camera_info(
                 path
             )
 
