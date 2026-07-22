@@ -1,5 +1,8 @@
 from PIL import Image, ExifTags
 
+from services.image.location import get_location
+
+
 
 def convert_coordinate(value):
 
@@ -30,12 +33,15 @@ def convert_coordinate(value):
             minutes / 60
             +
             seconds / 3600,
+
             6
+
         )
 
     except:
 
         return None
+
 
 
 
@@ -55,10 +61,7 @@ def get_gps_info(path):
 
 
 
-    gps_data = {}
-
-
-    gps_tag = None
+    gps = None
 
 
     for key in exif:
@@ -67,21 +70,25 @@ def get_gps_info(path):
             key
         )
 
+
         if tag == "GPSInfo":
 
-            gps_tag = exif[key]
+            gps = exif[key]
 
             break
 
 
 
-    if not gps_tag:
+    if not gps:
 
         return None
 
 
 
-    for key, value in gps_tag.items():
+    gps_data = {}
+
+
+    for key, value in gps.items():
 
         name = ExifTags.GPSTAGS.get(
             key,
@@ -92,29 +99,23 @@ def get_gps_info(path):
 
 
 
-    latitude = gps_data.get(
+    if not gps_data.get(
         "GPSLatitude"
-    )
-
-
-    longitude = gps_data.get(
-        "GPSLongitude"
-    )
-
-
-    if not latitude or not longitude:
+    ):
 
         return None
 
 
 
     lat = convert_coordinate(
-        latitude
+        gps_data["GPSLatitude"]
     )
 
+
     lon = convert_coordinate(
-        longitude
+        gps_data["GPSLongitude"]
     )
+
 
 
     if gps_data.get(
@@ -122,6 +123,7 @@ def get_gps_info(path):
     ) == "S":
 
         lat = -lat
+
 
 
     if gps_data.get(
@@ -133,6 +135,7 @@ def get_gps_info(path):
 
 
     result = {
+
 
         "latitude":
 
@@ -152,6 +155,21 @@ def get_gps_info(path):
 
 
 
+    location = get_location(
+
+        lat,
+
+        lon
+
+    )
+
+
+    if location:
+
+        result["location"] = location
+
+
+
     altitude = gps_data.get(
         "GPSAltitude"
     )
@@ -162,6 +180,7 @@ def get_gps_info(path):
         try:
 
             result["altitude"] = round(
+
                 float(
                     altitude[0]
                 )
@@ -169,7 +188,9 @@ def get_gps_info(path):
                 float(
                     altitude[1]
                 ),
+
                 1
+
             )
 
         except:
