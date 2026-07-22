@@ -11,7 +11,6 @@ from config import TOKEN
 from handlers.start import start_command
 from handlers.files import file_handler
 from handlers.buttons import button_handler
-from handlers.convert import convert_menu
 
 
 def main():
@@ -19,6 +18,7 @@ def main():
     app = Application.builder().token(TOKEN).build()
 
 
+    # Команда /start
     app.add_handler(
         CommandHandler(
             "start",
@@ -27,6 +27,7 @@ def main():
     )
 
 
+    # Приём файлов
     app.add_handler(
         MessageHandler(
             filters.Document.ALL,
@@ -35,6 +36,7 @@ def main():
     )
 
 
+    # Кнопки меню
     app.add_handler(
         CallbackQueryHandler(
             button_handler
@@ -42,7 +44,7 @@ def main():
     )
 
 
-    print("🚀 Convertly 3.0 запущен!")
+    print("🚀 Convertly 3.1 запущен!")
 
 
     app.run_polling()
