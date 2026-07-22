@@ -1,30 +1,54 @@
-from telegram import Update
+from telegram import (
+    Update,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup
+)
+
+
 from telegram.ext import ContextTypes
 
 
+
 from handlers.image_actions import (
+
     image_info_action,
+
     image_convert_action,
+
     image_compress_action
+
 )
+
 
 
 from handlers.watermark import (
+
     watermark_action,
+
     watermark_apply
+
 )
+
 
 
 from utils.state import (
+
     set_state
+
 )
+
+
 
 
 
 async def button_handler(
+
     update: Update,
+
     context: ContextTypes.DEFAULT_TYPE
+
 ):
+
 
     query = update.callback_query
 
@@ -32,7 +56,12 @@ async def button_handler(
     await query.answer()
 
 
+
     data = query.data
+
+
+    user_id = query.from_user.id
+
 
 
     print(
@@ -41,7 +70,6 @@ async def button_handler(
     )
 
 
-    user_id = query.from_user.id
 
 
 
@@ -49,18 +77,26 @@ async def button_handler(
     # IMAGE INFO
     # ==========================
 
+
     if data in [
+
         "img_info",
+
         "info"
+
     ]:
 
 
         await image_info_action(
+
             update,
+
             context
+
         )
 
         return
+
 
 
 
@@ -69,18 +105,26 @@ async def button_handler(
     # CONVERT
     # ==========================
 
+
     if data in [
+
         "img_convert",
+
         "convert"
+
     ]:
 
 
         await image_convert_action(
+
             update,
+
             context
+
         )
 
         return
+
 
 
 
@@ -89,18 +133,26 @@ async def button_handler(
     # COMPRESS
     # ==========================
 
+
     if data in [
+
         "img_compress",
+
         "compress"
+
     ]:
 
 
         await image_compress_action(
+
             update,
+
             context
+
         )
 
         return
+
 
 
 
@@ -109,15 +161,16 @@ async def button_handler(
     # WATERMARK OPEN
     # ==========================
 
-    if data in [
-        "img_watermark",
-        "watermark"
-    ]:
+
+    if data == "img_watermark":
 
 
         await watermark_action(
+
             update,
+
             context
+
         )
 
         return
@@ -125,19 +178,57 @@ async def button_handler(
 
 
 
+
     # ==========================
-    # WATERMARK CREATE
+    # WATERMARK APPLY
     # ==========================
+
 
     if data == "wm_apply":
 
 
         await watermark_apply(
+
             update,
+
             context
+
         )
 
         return
+
+
+
+
+
+    # ==========================
+    # WATERMARK TEXT
+    # ==========================
+
+
+    if data == "wm_text":
+
+
+        set_state(
+
+            user_id,
+
+            "waiting_watermark_text",
+
+            True
+
+        )
+
+
+        await query.message.reply_text(
+
+            "✏️ Введите текст водяного знака:"
+
+        )
+
+
+        return
+
 
 
 
@@ -146,34 +237,81 @@ async def button_handler(
     # WATERMARK POSITION
     # ==========================
 
+
     if data == "wm_position":
+
 
 
         keyboard = [
 
+
             [
 
-                ("↖️ Верх слева","tl"),
+                InlineKeyboardButton(
 
-                ("⬆️ Верх центр","tc"),
+                    "↖️",
 
-                ("↗️ Верх справа","tr")
+                    callback_data="wm_pos_tl"
+
+                ),
+
+                InlineKeyboardButton(
+
+                    "⬆️",
+
+                    callback_data="wm_pos_tc"
+
+                ),
+
+                InlineKeyboardButton(
+
+                    "↗️",
+
+                    callback_data="wm_pos_tr"
+
+                )
 
             ],
 
+
             [
 
-                ("🎯 Центр","c")
+                InlineKeyboardButton(
+
+                    "🎯 Центр",
+
+                    callback_data="wm_pos_c"
+
+                )
 
             ],
 
+
             [
 
-                ("↙️ Низ слева","bl"),
+                InlineKeyboardButton(
 
-                ("⬇️ Низ центр","bc"),
+                    "↙️",
 
-                ("↘️ Низ справа","br")
+                    callback_data="wm_pos_bl"
+
+                ),
+
+                InlineKeyboardButton(
+
+                    "⬇️",
+
+                    callback_data="wm_pos_bc"
+
+                ),
+
+                InlineKeyboardButton(
+
+                    "↘️",
+
+                    callback_data="wm_pos_br"
+
+                )
 
             ]
 
@@ -181,44 +319,14 @@ async def button_handler(
 
 
 
-        from telegram import (
-            InlineKeyboardButton,
-            InlineKeyboardMarkup
-        )
-
-
-        buttons = []
-
-
-        for row in keyboard:
-
-            buttons.append(
-
-                [
-
-                    InlineKeyboardButton(
-
-                        text,
-
-                        callback_data=
-                        "wm_pos_"+value
-
-                    )
-
-                    for text,value in row
-
-                ]
-
-            )
-
-
         await query.message.reply_text(
 
             "📍 Выберите положение:",
 
-            reply_markup=
-            InlineKeyboardMarkup(
-                buttons
+            reply_markup=InlineKeyboardMarkup(
+
+                keyboard
+
             )
 
         )
@@ -230,18 +338,19 @@ async def button_handler(
 
 
 
-    # ==========================
-    # POSITION SELECT
-    # ==========================
-
     if data.startswith(
+
         "wm_pos_"
+
     ):
 
 
         position = data.replace(
+
             "wm_pos_",
+
             ""
+
         )
 
 
@@ -273,32 +382,39 @@ async def button_handler(
     # OPACITY
     # ==========================
 
+
     if data == "wm_opacity":
 
 
-        from telegram import (
-            InlineKeyboardButton,
-            InlineKeyboardMarkup
-        )
+        keyboard = [
 
-
-        buttons = [
 
             [
 
                 InlineKeyboardButton(
+
                     "30%",
+
                     callback_data="wm_op_30"
+
                 ),
 
+
                 InlineKeyboardButton(
+
                     "60%",
+
                     callback_data="wm_op_60"
+
                 ),
 
+
                 InlineKeyboardButton(
+
                     "90%",
+
                     callback_data="wm_op_90"
+
                 )
 
             ]
@@ -308,11 +424,12 @@ async def button_handler(
 
         await query.message.reply_text(
 
-            "🌫 Прозрачность:",
+            "🌫 Выберите прозрачность:",
 
-            reply_markup=
-            InlineKeyboardMarkup(
-                buttons
+            reply_markup=InlineKeyboardMarkup(
+
+                keyboard
+
             )
 
         )
@@ -325,21 +442,24 @@ async def button_handler(
 
 
     if data.startswith(
+
         "wm_op_"
+
     ):
 
 
-        opacity = int(
+        value = int(
 
             data.replace(
+
                 "wm_op_",
+
                 ""
+
             )
 
         )
 
-
-        # перевод процентов в alpha
 
         set_state(
 
@@ -347,9 +467,7 @@ async def button_handler(
 
             "opacity",
 
-            int(
-                opacity*2.55
-            )
+            int(value * 2.55)
 
         )
 
@@ -372,9 +490,11 @@ async def button_handler(
     # ==========================
 
 
+
     await query.message.reply_text(
 
-        "❌ Функция пока не подключена\n"
+        "❌ Функция ещё не подключена\n\n"
+
         f"Код: {data}"
 
     )
