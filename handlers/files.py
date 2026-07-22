@@ -6,6 +6,8 @@ from telegram.ext import ContextTypes
 from database.history import add_history
 from database.users import add_file
 
+from handlers.image_menu import image_menu
+
 
 UPLOAD_DIR = "files/uploads"
 
@@ -14,6 +16,7 @@ os.makedirs(
     UPLOAD_DIR,
     exist_ok=True
 )
+
 
 
 async def file_handler(
@@ -54,14 +57,32 @@ async def file_handler(
     add_history(
         user_id,
         filename,
-        "Получен файл"
+        "Загрузка файла"
     )
 
 
-    await update.message.reply_text(
+    extension = filename.lower().split(".")[-1]
 
-        "✅ Файл получен!\n\n"
-        f"📄 {filename}\n\n"
-        "⚙️ Анализирую файл..."
 
-    )
+    if extension in [
+        "jpg",
+        "jpeg",
+        "png",
+        "webp",
+        "bmp"
+    ]:
+
+        await image_menu(
+            update,
+            context
+        )
+
+    else:
+
+        await update.message.reply_text(
+
+            "✅ Файл получен!\n\n"
+            f"📄 {filename}\n\n"
+            "⚙️ Поддержка этого формата скоро появится."
+
+        )
