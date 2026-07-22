@@ -1,27 +1,37 @@
-from pathlib import Path
 from PIL import Image
+from pathlib import Path
 import os
 
 
-def image_info(path):
+def image_info(
+    path
+):
 
     image = Image.open(path)
 
+
     return {
 
-        "name": Path(path).name,
+        "name":
+            Path(path).name,
 
-        "width": image.width,
+        "format":
+            image.format,
 
-        "height": image.height,
+        "width":
+            image.width,
 
-        "format": image.format,
+        "height":
+            image.height,
 
-        "size_mb": round(
-            os.path.getsize(path) /
-            1024 /
-            1024,
-            2
-        )
+        "size":
+            round(
+                os.path.getsize(path)
+                /
+                1024
+                /
+                1024,
+                2
+            )
 
     }
