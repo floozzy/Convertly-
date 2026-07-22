@@ -1,11 +1,14 @@
-from telegram import Update
 from telegram.ext import ContextTypes
 
-from handlers.image_actions import image_compress_action
+from handlers.image_actions import (
+    image_compress_action,
+    image_info_action,
+    image_convert_action
+)
 
 
 async def button_handler(
-    update: Update,
+    update,
     context: ContextTypes.DEFAULT_TYPE
 ):
 
@@ -13,64 +16,30 @@ async def button_handler(
 
     await query.answer()
 
+
     data = query.data
 
 
-    # Главное меню
 
-    if data == "convert":
+    if data == "img_compress":
 
-        await query.message.reply_text(
-            "📂 Отправьте файл для обработки."
+        await image_compress_action(
+            update,
+            context
         )
 
 
-    elif data == "profile":
+    elif data == "img_info":
 
-        await query.message.reply_text(
-            "👤 Ваш профиль:\n\n"
-            "Используйте команду:\n"
-            "/profile"
+        await image_info_action(
+            update,
+            context
         )
-
-
-    elif data == "premium":
-
-        await query.message.reply_text(
-            "⭐ Premium Convertly\n\n"
-            "Скоро появятся:\n"
-            "• больше лимитов\n"
-            "• быстрые серверы\n"
-            "• AI-функции\n"
-            "• обработка больших файлов"
-        )
-
-
-    elif data == "help":
-
-        await query.message.reply_text(
-            "ℹ️ Помощь Convertly\n\n"
-            "Отправьте файл и выберите действие."
-        )
-
-
-    # IMAGE ENGINE
 
 
     elif data == "img_convert":
 
-        await query.message.reply_text(
-            "🔄 Конвертация изображений\n\n"
-            "Доступно скоро:\n"
-            "JPG → PNG\n"
-            "PNG → JPG\n"
-            "WEBP → JPG"
-        )
-
-
-    elif data == "img_compress":
-
-        await image_compress_action(
+        await image_convert_action(
             update,
             context
         )
@@ -79,45 +48,26 @@ async def button_handler(
     elif data == "img_resize":
 
         await query.message.reply_text(
-            "📐 Изменение размера\n\n"
-            "Модуль Resize Engine подключается."
+            "📐 Resize Engine скоро."
         )
 
 
     elif data == "img_effects":
 
         await query.message.reply_text(
-            "✨ Image Effects\n\n"
-            "Будут доступны:\n"
-            "• Ч/Б\n"
-            "• Размытие\n"
-            "• Отражение\n"
-            "• Улучшение качества"
+            "✨ Effects Engine скоро."
         )
 
 
     elif data == "img_watermark":
 
         await query.message.reply_text(
-            "💧 Watermark Engine\n\n"
-            "Добавление водяных знаков скоро."
-        )
-
-
-    elif data == "img_info":
-
-        await query.message.reply_text(
-            "📊 Image Info\n\n"
-            "Покажу:\n"
-            "• размер\n"
-            "• формат\n"
-            "• вес\n"
-            "• разрешение"
+            "💧 Watermark Engine скоро."
         )
 
 
     else:
 
         await query.message.reply_text(
-            "⚠️ Неизвестная команда."
+            "⚠️ Команда не найдена."
         )
