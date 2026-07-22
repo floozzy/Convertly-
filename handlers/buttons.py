@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from handlers.profile import profile_command
+from handlers.image_actions import image_compress_action
 
 
 async def button_handler(
@@ -16,42 +16,52 @@ async def button_handler(
     data = query.data
 
 
-    if data == "profile":
+    # Главное меню
 
-        await query.message.reply_text(
-            "Используйте команду:\n/profile"
-        )
-
-
-    elif data == "help":
-
-        await query.message.reply_text(
-            "📚 Convertly\n\n"
-            "Отправьте файл, и я помогу его обработать."
-        )
-
-
-    elif data == "premium":
-
-        await query.message.reply_text(
-            "⭐ Premium скоро будет доступен."
-        )
-
-
-    elif data == "convert":
+    if data == "convert":
 
         await query.message.reply_text(
             "📂 Отправьте файл для обработки."
         )
 
 
+    elif data == "profile":
+
+        await query.message.reply_text(
+            "👤 Ваш профиль:\n\n"
+            "Используйте команду:\n"
+            "/profile"
+        )
+
+
+    elif data == "premium":
+
+        await query.message.reply_text(
+            "⭐ Premium Convertly\n\n"
+            "Скоро появятся:\n"
+            "• больше лимитов\n"
+            "• быстрые серверы\n"
+            "• AI-функции\n"
+            "• обработка больших файлов"
+        )
+
+
+    elif data == "help":
+
+        await query.message.reply_text(
+            "ℹ️ Помощь Convertly\n\n"
+            "Отправьте файл и выберите действие."
+        )
+
+
     # IMAGE ENGINE
+
 
     elif data == "img_convert":
 
         await query.message.reply_text(
             "🔄 Конвертация изображений\n\n"
-            "Скоро здесь будет выбор формата:\n"
+            "Доступно скоро:\n"
             "JPG → PNG\n"
             "PNG → JPG\n"
             "WEBP → JPG"
@@ -60,9 +70,9 @@ async def button_handler(
 
     elif data == "img_compress":
 
-        await query.message.reply_text(
-            "📦 Сжатие изображения\n\n"
-            "Функция подключается."
+        await image_compress_action(
+            update,
+            context
         )
 
 
@@ -70,33 +80,39 @@ async def button_handler(
 
         await query.message.reply_text(
             "📐 Изменение размера\n\n"
-            "Выберите размер в следующем обновлении."
+            "Модуль Resize Engine подключается."
         )
 
 
     elif data == "img_effects":
 
         await query.message.reply_text(
-            "✨ Эффекты:\n\n"
+            "✨ Image Effects\n\n"
+            "Будут доступны:\n"
             "• Ч/Б\n"
             "• Размытие\n"
-            "• Отражение"
+            "• Отражение\n"
+            "• Улучшение качества"
         )
 
 
     elif data == "img_watermark":
 
         await query.message.reply_text(
-            "💧 Водяной знак\n\n"
-            "Готовлю обработку."
+            "💧 Watermark Engine\n\n"
+            "Добавление водяных знаков скоро."
         )
 
 
     elif data == "img_info":
 
         await query.message.reply_text(
-            "📊 Информация об изображении\n\n"
-            "Размеры и формат будут показаны здесь."
+            "📊 Image Info\n\n"
+            "Покажу:\n"
+            "• размер\n"
+            "• формат\n"
+            "• вес\n"
+            "• разрешение"
         )
 
 
