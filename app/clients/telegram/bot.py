@@ -12,6 +12,7 @@ from telegram.ext import (
 
 from app.services.bot_service import build_help_message, build_start_message
 from app.services.menu_service import build_main_menu, build_photo_menu
+from app.services.telegram_runtime import configure_runtime
 from app.services.token_service import get_bot_token
 from config.settings import BOT_TOKEN
 
@@ -52,6 +53,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 
 def build_app() -> Application:
+    configure_runtime()
     token = BOT_TOKEN or get_bot_token()
     if not token:
         raise RuntimeError("BOT_TOKEN is not set")
