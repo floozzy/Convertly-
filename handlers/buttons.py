@@ -16,12 +16,66 @@ async def button_handler(
 
     await query.answer()
 
-
     data = query.data
 
 
+    # =====================
+    # MAIN MENU
+    # =====================
 
-    if data == "img_compress":
+
+    if data == "convert":
+
+        await query.message.reply_text(
+            "📂 Отправьте файл для обработки."
+        )
+
+
+    elif data == "profile":
+
+        await query.message.reply_text(
+            "👤 Профиль\n\n"
+            "Используйте команду:\n"
+            "/profile"
+        )
+
+
+    elif data == "premium":
+
+        await query.message.reply_text(
+            "⭐ Convertly Premium\n\n"
+            "Скоро будет доступно:\n\n"
+            "🚀 Больше лимитов\n"
+            "⚡ Быстрее обработка\n"
+            "🤖 AI-функции\n"
+            "📦 Большие файлы"
+        )
+
+
+    elif data == "help":
+
+        await query.message.reply_text(
+            "ℹ️ Помощь Convertly\n\n"
+            "1. Отправьте файл\n"
+            "2. Выберите действие\n"
+            "3. Получите результат"
+        )
+
+
+    # =====================
+    # IMAGE ENGINE
+    # =====================
+
+
+    elif data == "img_convert":
+
+        await image_convert_action(
+            update,
+            context
+        )
+
+
+    elif data == "img_compress":
 
         await image_compress_action(
             update,
@@ -37,37 +91,33 @@ async def button_handler(
         )
 
 
-    elif data == "img_convert":
-
-        await image_convert_action(
-            update,
-            context
-        )
-
-
     elif data == "img_resize":
 
         await query.message.reply_text(
-            "📐 Resize Engine скоро."
+            "📐 Resize Engine\n\n"
+            "В разработке."
         )
 
 
     elif data == "img_effects":
 
         await query.message.reply_text(
-            "✨ Effects Engine скоро."
+            "✨ Effects Engine\n\n"
+            "В разработке."
         )
 
 
     elif data == "img_watermark":
 
         await query.message.reply_text(
-            "💧 Watermark Engine скоро."
+            "💧 Watermark Engine\n\n"
+            "В разработке."
         )
 
 
     else:
 
         await query.message.reply_text(
-            "⚠️ Команда не найдена."
+            "⚠️ Неизвестная команда:\n"
+            f"{data}"
         )
