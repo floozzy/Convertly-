@@ -1,9 +1,17 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import (
+    Update,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup
+)
+
 from telegram.ext import ContextTypes
+
 
 from services.image.watermark import add_watermark
 
-from handlers.image_actions import get_last_image
+
+from utils.images import get_image
+
 
 from utils.state import (
     set_state,
@@ -13,99 +21,189 @@ from utils.state import (
 
 
 
+
+
+# =====================================
+# OPEN WATERMARK MENU
+# =====================================
+
+
 async def watermark_action(
+
     update: Update,
+
     context: ContextTypes.DEFAULT_TYPE
+
 ):
+
 
     query = update.callback_query
 
+
     await query.answer()
+
 
 
     user_id = query.from_user.id
 
 
-    set_state(
+
+    # default settings
+
+
+    if not get_state(
         user_id,
-        "text",
-        "© Convertly"
-    )
+        "text"
+    ):
 
 
-    set_state(
+        set_state(
+
+            user_id,
+
+            "text",
+
+            "© Convertly"
+
+        )
+
+
+    if not get_state(
         user_id,
-        "color",
-        (255,255,255)
-    )
+        "color"
+    ):
 
 
-    set_state(
+        set_state(
+
+            user_id,
+
+            "color",
+
+            (255,255,255)
+
+        )
+
+
+    if not get_state(
         user_id,
-        "opacity",
-        120
-    )
+        "opacity"
+    ):
 
 
-    set_state(
+        set_state(
+
+            user_id,
+
+            "opacity",
+
+            180
+
+        )
+
+
+    if not get_state(
         user_id,
-        "size",
-        60
-    )
+        "size"
+    ):
 
 
-    set_state(
+        set_state(
+
+            user_id,
+
+            "size",
+
+            80
+
+        )
+
+
+    if not get_state(
         user_id,
-        "position",
-        "br"
-    )
+        "position"
+    ):
+
+
+        set_state(
+
+            user_id,
+
+            "position",
+
+            "br"
+
+        )
+
 
 
 
     keyboard = [
 
+
         [
 
             InlineKeyboardButton(
-                "✏️ Изменить текст",
+
+                "✏️ Текст",
+
                 callback_data="wm_text"
+
             )
 
         ],
 
+
         [
 
             InlineKeyboardButton(
+
                 "🎨 Цвет",
+
                 callback_data="wm_color"
+
             ),
 
             InlineKeyboardButton(
+
                 "🌫 Прозрачность",
+
                 callback_data="wm_opacity"
+
             )
 
         ],
 
+
         [
 
             InlineKeyboardButton(
+
                 "📏 Размер",
+
                 callback_data="wm_size"
+
             ),
 
             InlineKeyboardButton(
+
                 "📍 Положение",
+
                 callback_data="wm_position"
+
             )
 
         ],
 
+
         [
 
             InlineKeyboardButton(
+
                 "✅ Создать",
+
                 callback_data="wm_apply"
+
             )
 
         ]
@@ -113,10 +211,14 @@ async def watermark_action(
     ]
 
 
+
+
     await query.message.reply_text(
 
         "💧 <b>Watermark Studio</b>\n\n"
-        "Настройте водяной знак:",
+        f"Текст: {get_state(user_id,'text')}\n"
+        f"Размер: {get_state(user_id,'size')}\n"
+        f"Позиция: {get_state(user_id,'position')}",
 
         reply_markup=InlineKeyboardMarkup(
             keyboard
@@ -130,22 +232,39 @@ async def watermark_action(
 
 
 
+
+# =====================================
+# APPLY WATERMARK
+# =====================================
+
+
+
 async def watermark_apply(
+
     update,
+
     context
+
 ):
+
 
     query = update.callback_query
 
+
     await query.answer()
+
 
 
     user_id = query.from_user.id
 
 
-    path = get_last_image(
+
+    path = get_image(
+
         user_id
+
     )
+
 
 
     if not path:
@@ -153,59 +272,110 @@ async def watermark_apply(
 
         await query.message.reply_text(
 
-            "❌ Фото не найдено"
+            "❌ Фото не найдено.\n"
+            "Сначала отправьте изображение."
 
         )
+
 
         return
 
 
 
-    result = add_watermark(
+    try:
 
-        path,
 
-        get_state(
-            user_id,
-            "text"
-        ),
 
-        get_state(
-            user_id,
-            "position"
-        ),
+        result = add_watermark(
 
-        get_state(
-            user_id,
-            "color"
-        ),
+            path,
 
-        get_state(
-            user_id,
-            "opacity"
-        ),
 
-        get_state(
-            user_id,
-            "size"
+            get_state(
+
+                user_id,
+
+                "text",
+
+                "© Convertly"
+
+            ),
+
+
+            get_state(
+
+                user_id,
+
+                "position",
+
+                "br"
+
+            ),
+
+
+            get_state(
+
+                user_id,
+
+                "color",
+
+                (255,255,255)
+
+            ),
+
+
+            get_state(
+
+                user_id,
+
+                "opacity",
+
+                180
+
+            ),
+
+
+            get_state(
+
+                user_id,
+
+                "size",
+
+                80
+
+            )
+
         )
 
-    )
 
 
+        if not result:
 
-    if result:
+
+            await query.message.reply_text(
+
+                "❌ Не удалось создать watermark."
+
+            )
+
+
+            return
+
+
 
 
         with open(
+
             result,
+
             "rb"
-        ) as file:
+
+        ) as photo:
 
 
-            await query.message.reply_document(
+            await query.message.reply_photo(
 
-                file,
+                photo,
 
                 caption="💧 Watermark готов"
 
@@ -213,6 +383,65 @@ async def watermark_apply(
 
 
 
-    clear_state(
-        user_id
+    except Exception as e:
+
+
+        print(
+
+            "WATERMARK ERROR:",
+
+            e
+
+        )
+
+
+        await query.message.reply_text(
+
+            "❌ Ошибка watermark:\n"
+
+            +
+
+
+            str(e)
+
+        )
+
+
+
+
+# =====================================
+# TEXT INPUT MODE
+# =====================================
+
+
+
+async def watermark_text_start(
+
+    update,
+
+    context
+
+):
+
+
+    user_id = update.effective_user.id
+
+
+
+    set_state(
+
+        user_id,
+
+        "waiting_watermark_text",
+
+        True
+
+    )
+
+
+
+    await update.message.reply_text(
+
+        "✏️ Отправьте новый текст водяного знака."
+
     )
