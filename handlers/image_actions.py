@@ -5,14 +5,10 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 
-from services.image.info import image_info
-
-
 from utils.images import (
     save_image,
     get_image
 )
-
 
 from utils.state import (
     set_state,
@@ -20,6 +16,8 @@ from utils.state import (
     clear_state
 )
 
+
+from services.image.info import image_info
 
 
 
@@ -35,9 +33,9 @@ os.makedirs(
 
 
 
-# =====================================
-# PHOTO HANDLER
-# =====================================
+# ==================================================
+# RECEIVE PHOTO
+# ==================================================
 
 
 async def photo_handler(
@@ -53,15 +51,16 @@ async def photo_handler(
     )
 
 
+    user_id = update.effective_user.id
+
+
+
     try:
 
-        user_id = update.effective_user.id
 
-
-
-        # ==============================
+        # ==========================
         # CONVERT MODE
-        # ==============================
+        # ==========================
 
 
         if get_state(
@@ -82,19 +81,87 @@ async def photo_handler(
             )
 
 
-            await update.message.reply_text(
 
-                "🔄 Фото получено!\n"
-                "Запускаю конвертацию..."
+            photo = update.message.photo[-1]
+
+
+
+            tg_file = await context.bot.get_file(
+
+                photo.file_id
 
             )
+
+
+
+            path = os.path.join(
+
+                UPLOAD_DIR,
+
+                f"{user_id}_convert.jpg"
+
+            )
+
+
+
+            await tg_file.download_to_drive(
+
+                path
+
+            )
+
+
+
+            save_image(
+
+                user_id,
+
+                path
+
+            )
+
 
 
             print(
 
-                "CONVERT PHOTO RECEIVED"
+                "CONVERT IMAGE:",
+
+                path
 
             )
+
+
+
+            await update.message.reply_text(
+
+                "🔄 Фото получено!\n"
+                "Конвертация запущена..."
+
+            )
+
+
+
+            # ВРЕМЕННО ТЕСТ
+            # потом заменим настоящим конвертером
+
+
+            with open(
+
+                path,
+
+                "rb"
+
+            ) as img:
+
+
+                await update.message.reply_photo(
+
+                    img,
+
+                    caption="✅ Конвертация завершена (тест)"
+
+                )
+
 
 
             return
@@ -103,9 +170,11 @@ async def photo_handler(
 
 
 
-        # ==============================
+
+
+        # ==========================
         # WATERMARK MODE
-        # ==============================
+        # ==========================
 
 
         if get_state(
@@ -129,14 +198,7 @@ async def photo_handler(
             await update.message.reply_text(
 
                 "💧 Фото получено!\n"
-                "Добавляю водяной знак..."
-
-            )
-
-
-            print(
-
-                "WATERMARK PHOTO RECEIVED"
+                "Watermark запускается..."
 
             )
 
@@ -148,28 +210,21 @@ async def photo_handler(
 
 
 
-        # ==============================
-        # NORMAL SAVE
-        # ==============================
+
+
+        # ==========================
+        # NORMAL PHOTO
+        # ==========================
+
 
 
         photo = update.message.photo[-1]
 
 
 
-        telegram_file = await context.bot.get_file(
+        tg_file = await context.bot.get_file(
 
             photo.file_id
-
-        )
-
-
-
-        filename = (
-
-            f"{user_id}_"
-
-            f"{photo.file_id}.jpg"
 
         )
 
@@ -179,13 +234,13 @@ async def photo_handler(
 
             UPLOAD_DIR,
 
-            filename
+            f"{user_id}_{photo.file_id}.jpg"
 
         )
 
 
 
-        await telegram_file.download_to_drive(
+        await tg_file.download_to_drive(
 
             path
 
@@ -215,7 +270,7 @@ async def photo_handler(
 
         await update.message.reply_text(
 
-            "✅ Фото получено!\n"
+            "✅ Фото сохранено!\n"
             "Выберите действие 👇"
 
         )
@@ -249,10 +304,9 @@ async def photo_handler(
 
 
 
-
-# =====================================
-# INFO
-# =====================================
+# ==================================================
+# IMAGE INFO
+# ==================================================
 
 
 async def image_info_action(
@@ -262,6 +316,7 @@ async def image_info_action(
     context
 
 ):
+
 
     query = update.callback_query
 
@@ -291,8 +346,8 @@ async def image_info_action(
 
         )
 
-
         return
+
 
 
 
@@ -304,6 +359,7 @@ async def image_info_action(
             path
 
         )
+
 
 
         await query.message.reply_text(
@@ -331,9 +387,10 @@ async def image_info_action(
 
 
 
-# =====================================
-# CONVERT
-# =====================================
+
+# ==================================================
+# CONVERT BUTTON
+# ==================================================
 
 
 async def image_convert_action(
@@ -384,9 +441,9 @@ async def image_convert_action(
 
 
 
-# =====================================
-# COMPRESS
-# =====================================
+# ==================================================
+# COMPRESS BUTTON
+# ==================================================
 
 
 async def image_compress_action(
