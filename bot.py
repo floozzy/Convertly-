@@ -22,7 +22,13 @@ def main():
             "start",
             start_command
         )
+    from telegram.ext import CallbackQueryHandler
+
+app.add_handler(
+    CallbackQueryHandler(
+        button_handler
     )
+)
 
 
     app.add_handler(
