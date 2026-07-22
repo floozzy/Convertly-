@@ -28,16 +28,23 @@ async def button_handler(
 
 
     data = query.data
-    
-    print("BUTTON PRESSED:", data)
+
+
+    print(
+        "BUTTON PRESSED:",
+        data
+    )
 
 
 
     # =========================
-    # IMAGE INFORMATION
+    # IMAGE INFO
     # =========================
 
-    if data == "info":
+    if data in [
+        "img_info",
+        "info"
+    ]:
 
         await image_info_action(
             update,
@@ -49,10 +56,13 @@ async def button_handler(
 
 
     # =========================
-    # CONVERT IMAGE
+    # IMAGE CONVERT
     # =========================
 
-    if data == "convert":
+    if data in [
+        "img_convert",
+        "convert"
+    ]:
 
         await image_convert_action(
             update,
@@ -64,10 +74,13 @@ async def button_handler(
 
 
     # =========================
-    # COMPRESS IMAGE
+    # IMAGE COMPRESS
     # =========================
 
-    if data == "compress":
+    if data in [
+        "img_compress",
+        "compress"
+    ]:
 
         await image_compress_action(
             update,
@@ -82,7 +95,10 @@ async def button_handler(
     # WATERMARK
     # =========================
 
-    if data == "watermark":
+    if data in [
+        "img_watermark",
+        "watermark"
+    ]:
 
         await watermark_action(
             update,
@@ -94,12 +110,12 @@ async def button_handler(
 
 
     # =========================
-    # UNKNOWN BUTTON
+    # UNKNOWN
     # =========================
 
     await query.message.reply_text(
 
-        "❌ Неизвестная команда.\n"
-        "Эта функция ещё не подключена."
+        "❌ Функция пока не подключена.\n\n"
+        f"Код кнопки: {data}"
 
     )
