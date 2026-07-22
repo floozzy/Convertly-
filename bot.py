@@ -2,6 +2,7 @@ from telegram.ext import (
     Application,
     CommandHandler,
     MessageHandler,
+    CallbackQueryHandler,
     filters
 )
 
@@ -22,19 +23,20 @@ def main():
             "start",
             start_command
         )
-    from telegram.ext import CallbackQueryHandler
-
-app.add_handler(
-    CallbackQueryHandler(
-        button_handler
     )
-)
 
 
     app.add_handler(
         MessageHandler(
             filters.Document.ALL,
             file_handler
+        )
+    )
+
+
+    app.add_handler(
+        CallbackQueryHandler(
+            button_handler
         )
     )
 
