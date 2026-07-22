@@ -5,7 +5,7 @@ states = {}
 def set_state(
     user_id,
     key,
-    value
+    value=True
 ):
 
     if user_id not in states:
@@ -14,6 +14,7 @@ def set_state(
 
 
     states[user_id][key] = value
+
 
 
 
@@ -43,6 +44,27 @@ def get_state(
 
 
 
+
+
+def has_state(
+    user_id,
+    key
+):
+
+    return key in states.get(
+
+        user_id,
+
+        {}
+
+    )
+
+
+
+
+
+
+
 def clear_state(
     user_id,
     key=None
@@ -54,9 +76,10 @@ def clear_state(
 
 
 
-    # очистить только один режим
+    # удалить конкретное состояние
 
     if key:
+
 
         states[user_id].pop(
 
@@ -72,7 +95,8 @@ def clear_state(
 
 
 
-    # полностью очистить пользователя
+
+    # удалить все состояния пользователя
 
     states.pop(
 
