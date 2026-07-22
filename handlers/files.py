@@ -1,7 +1,19 @@
 import os
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update
 from telegram.ext import ContextTypes
+
+from database.history import add_history
+from database.users import add_file
+
+
+UPLOAD_DIR = "files/uploads"
+
+
+os.makedirs(
+    UPLOAD_DIR,
+    exist_ok=True
+)
 
 
 async def file_handler(
@@ -15,47 +27,41 @@ async def file_handler(
         return
 
 
+    user_id = update.effective_user.id
+
     filename = document.file_name
 
-    file = await document.get_file()
+
+    path = os.path.join(
+        UPLOAD_DIR,
+        f"{user_id}_{filename}"
+    )
 
 
-    path = f"files/{filename}"
+    telegram_file = await document.get_file()
 
 
-    await file.download_to_drive(
+    await telegram_file.download_to_drive(
         path
     )
 
 
-    context.user_data["file"] = path
+    add_file(
+        user_id
+    )
 
 
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                "🖼 JPG → PNG",
-                callback_data="jpg_png"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                "🖼 PNG → JPG",
-                callback_data="png_jpg"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                "📦 Сжать",
-                callback_data="compress"
-            )
-        ]
-    ]
+    add_history(
+        user_id,
+        filename,
+        "Получен файл"
+    )
 
 
     await update.message.reply_text(
-        "📥 Файл получен!\n\n"
+
+        "✅ Файл получен!\n\n"
         f"📄 {filename}\n\n"
-        "Выберите действие:",
-        reply_markup=InlineKeyboardMarkup(keyboard)
+        "⚙️ Анализирую файл..."
+
     )
