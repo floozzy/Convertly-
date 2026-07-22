@@ -5,21 +5,30 @@ import os
 
 from services.image.hashes import calculate_hashes
 
+
 from services.image.metadata import (
     get_file_dates,
     get_metadata
 )
 
+
 from services.image.colors import (
     analyze_colors
 )
+
 
 from services.image.quality import (
     analyze_quality
 )
 
+
 from services.image.camera import (
     get_camera_info
+)
+
+
+from services.image.gps import (
+    get_gps_info
 )
 
 
@@ -39,7 +48,13 @@ def image_info(path):
     )
 
 
+
     return {
+
+
+        # ===================
+        # FILE
+        # ===================
 
 
         "name":
@@ -66,6 +81,11 @@ def image_info(path):
 
 
 
+        # ===================
+        # IMAGE SIZE
+        # ===================
+
+
         "width":
 
             width,
@@ -90,12 +110,22 @@ def image_info(path):
 
 
 
+        # ===================
+        # SECURITY
+        # ===================
+
+
         "hashes":
 
             calculate_hashes(
                 path
             ),
 
+
+
+        # ===================
+        # FILE DATES
+        # ===================
 
 
         "dates":
@@ -106,12 +136,22 @@ def image_info(path):
 
 
 
+        # ===================
+        # METADATA
+        # ===================
+
+
         "metadata":
 
             get_metadata(
                 path
             ),
 
+
+
+        # ===================
+        # COLORS
+        # ===================
 
 
         "colors":
@@ -122,6 +162,11 @@ def image_info(path):
 
 
 
+        # ===================
+        # QUALITY
+        # ===================
+
+
         "quality":
 
             analyze_quality(
@@ -130,9 +175,27 @@ def image_info(path):
 
 
 
+        # ===================
+        # CAMERA
+        # ===================
+
+
         "camera":
 
             get_camera_info(
+                path
+            ),
+
+
+
+        # ===================
+        # GPS
+        # ===================
+
+
+        "gps":
+
+            get_gps_info(
                 path
             )
 
