@@ -1,3 +1,5 @@
+import logging
+
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -8,17 +10,35 @@ from telegram.ext import (
 
 from config import TOKEN
 
+from database.models import init_db
+
 from handlers.start import start_command
-from handlers.files import file_handler
 from handlers.buttons import button_handler
+
+
+logging.basicConfig(
+    level=logging.INFO
+)
 
 
 def main():
 
-    app = Application.builder().token(TOKEN).build()
+    print("🔄 Инициализация базы...")
+
+    init_db()
+
+    print("✅ База готова")
 
 
-    # Команда /start
+    app = (
+        Application
+        .builder()
+        .token(TOKEN)
+        .build()
+    )
+
+
+    # /start
     app.add_handler(
         CommandHandler(
             "start",
@@ -27,16 +47,7 @@ def main():
     )
 
 
-    # Получение файлов
-    app.add_handler(
-        MessageHandler(
-            filters.Document.ALL,
-            file_handler
-        )
-    )
-
-
-    # Обработка кнопок
+    # кнопки
     app.add_handler(
         CallbackQueryHandler(
             button_handler
@@ -44,7 +55,9 @@ def main():
     )
 
 
-    print("🚀 Convertly запущен успешно!")
+    print(
+        "🚀 Convertly запущен успешно!"
+    )
 
 
     app.run_polling()
