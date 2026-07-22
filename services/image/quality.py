@@ -1,5 +1,4 @@
 from PIL import Image, ImageFilter, ImageStat
-import numpy as np
 
 
 
@@ -12,7 +11,7 @@ def analyze_quality(path):
     )
 
 
-    # Резкость через разницу с размытой копией
+    # Оригинал и размытая версия
 
     blurred = image.filter(
         ImageFilter.GaussianBlur(
@@ -21,22 +20,36 @@ def analyze_quality(path):
     )
 
 
-    original = np.array(
-        image,
-        dtype=float
+    pixels = list(
+        image.getdata()
+    )
+
+    blur_pixels = list(
+        blurred.getdata()
     )
 
 
-    blur_array = np.array(
-        blurred,
-        dtype=float
-    )
+    # Анализ резкости
+
+    difference = []
 
 
-    sharpness = np.mean(
-        np.abs(
-            original - blur_array
+    for original, blur in zip(
+        pixels,
+        blur_pixels
+    ):
+
+        difference.append(
+            abs(
+                original - blur
+            )
         )
+
+
+    sharpness = sum(
+        difference
+    ) / len(
+        difference
     )
 
 
@@ -82,32 +95,32 @@ def analyze_quality(path):
 
 
 
-    # Оценка шума
+    # Шум через края
 
     edges = image.filter(
         ImageFilter.FIND_EDGES
     )
 
 
-    noise_stat = ImageStat.Stat(
+    edge_stat = ImageStat.Stat(
         edges
     )
 
 
-    noise = noise_stat.mean[0]
+    noise_value = edge_stat.mean[0]
 
 
-    if noise > 25:
+    if noise_value > 25:
 
-        noise_level = "Высокий"
+        noise = "Высокий"
 
-    elif noise > 10:
+    elif noise_value > 10:
 
-        noise_level = "Средний"
+        noise = "Средний"
 
     else:
 
-        noise_level = "Низкий"
+        noise = "Низкий"
 
 
 
@@ -126,8 +139,8 @@ def analyze_quality(path):
 
         +
 
-        (100 - min(noise,100))
-        *0.2
+        (100 - min(noise_value,100))
+        * 0.2
 
     )
 
@@ -158,18 +171,14 @@ def analyze_quality(path):
 
     return {
 
-
         "score":
             score,
-
 
         "verdict":
             verdict,
 
-
         "sharpness":
             sharpness_score,
-
 
         "brightness":
             round(
@@ -177,10 +186,8 @@ def analyze_quality(path):
                 1
             ),
 
-
         "light_status":
             light_status,
-
 
         "contrast":
             round(
@@ -188,8 +195,7 @@ def analyze_quality(path):
                 1
             ),
 
-
         "noise":
-            noise_level
+            noise
 
-  }
+    }
