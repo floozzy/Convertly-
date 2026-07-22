@@ -9,16 +9,34 @@ OUTPUT_DIR = "files/processed"
 
 def get_font(size):
 
-    try:
+    fonts = [
 
-        return ImageFont.truetype(
-            "DejaVuSans.ttf",
-            size
-        )
+        "/system/fonts/DroidSans.ttf",
 
-    except:
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
 
-        return ImageFont.load_default()
+        "DejaVuSans.ttf"
+
+    ]
+
+
+    for font in fonts:
+
+        try:
+
+            return ImageFont.truetype(
+                font,
+                size
+            )
+
+        except:
+
+            pass
+
+
+    return ImageFont.load_default()
+
+
 
 
 
@@ -26,166 +44,321 @@ def add_watermark(
 
     path,
 
-    text,
+    text="© Convertly",
 
-    position,
+    position="br",
 
-    color,
+    color=(255,255,255),
 
-    opacity,
+    opacity=200,
 
-    font_size
+    font_size=80
 
 ):
 
 
-    os.makedirs(
-        OUTPUT_DIR,
-        exist_ok=True
-    )
+    try:
 
 
-    image = Image.open(
-        path
-    ).convert(
-        "RGBA"
-    )
+        os.makedirs(
 
+            OUTPUT_DIR,
 
-    layer = Image.new(
-        "RGBA",
-        image.size,
-        (0,0,0,0)
-    )
+            exist_ok=True
 
-
-    draw = ImageDraw.Draw(
-        layer
-    )
-
-
-    font = get_font(
-        font_size
-    )
-
-
-    bbox = draw.textbbox(
-        (0,0),
-        text,
-        font=font
-    )
-
-
-    w = bbox[2]-bbox[0]
-
-    h = bbox[3]-bbox[1]
-
-
-
-    margin = 40
-
-
-    positions = {
-
-
-        "tl":
-        (
-            margin,
-            margin
-        ),
-
-
-        "tc":
-        (
-            (image.width-w)//2,
-            margin
-        ),
-
-
-        "tr":
-        (
-            image.width-w-margin,
-            margin
-        ),
-
-
-        "c":
-        (
-            (image.width-w)//2,
-            (image.height-h)//2
-        ),
-
-
-        "bl":
-        (
-            margin,
-            image.height-h-margin
-        ),
-
-
-        "bc":
-        (
-            (image.width-w)//2,
-            image.height-h-margin
-        ),
-
-
-        "br":
-        (
-            image.width-w-margin,
-            image.height-h-margin
         )
 
-    }
 
 
+        image = Image.open(
 
-    xy = positions.get(
-        position,
-        positions["br"]
-    )
+            path
 
+        ).convert(
 
+            "RGBA"
 
-    draw.text(
-        xy,
-        text,
-        font=font,
-        fill=(
-            color[0],
-            color[1],
-            color[2],
-            opacity
         )
-    )
 
 
 
-    result = Image.alpha_composite(
-        image,
-        layer
-    )
+        layer = Image.new(
+
+            "RGBA",
+
+            image.size,
+
+            (0,0,0,0)
+
+        )
 
 
 
-    output = os.path.join(
+        draw = ImageDraw.Draw(
 
-        OUTPUT_DIR,
+            layer
 
-        "watermark_"
-        +
-        os.path.basename(path)
-
-    )
+        )
 
 
 
-    result.convert(
-        "RGB"
-    ).save(
-        output,
-        quality=95
-    )
+        font = get_font(
+
+            font_size
+
+        )
 
 
-    return output
+
+        bbox = draw.textbbox(
+
+            (0,0),
+
+            text,
+
+            font=font
+
+        )
+
+
+        text_w = bbox[2]-bbox[0]
+
+        text_h = bbox[3]-bbox[1]
+
+
+
+        margin = 50
+
+
+
+        positions = {
+
+
+            "tl":
+
+            (
+
+                margin,
+
+                margin
+
+            ),
+
+
+
+            "tc":
+
+            (
+
+                (image.width-text_w)//2,
+
+                margin
+
+            ),
+
+
+
+            "tr":
+
+            (
+
+                image.width-text_w-margin,
+
+                margin
+
+            ),
+
+
+
+            "c":
+
+            (
+
+                (image.width-text_w)//2,
+
+                (image.height-text_h)//2
+
+            ),
+
+
+
+            "bl":
+
+            (
+
+                margin,
+
+                image.height-text_h-margin
+
+            ),
+
+
+
+            "bc":
+
+            (
+
+                (image.width-text_w)//2,
+
+                image.height-text_h-margin
+
+            ),
+
+
+
+            "br":
+
+            (
+
+                image.width-text_w-margin,
+
+                image.height-text_h-margin
+
+            )
+
+        }
+
+
+
+        xy = positions.get(
+
+            position,
+
+            positions["br"]
+
+        )
+
+
+
+        # тень под текст
+
+        shadow = (
+
+            xy[0]+3,
+
+            xy[1]+3
+
+        )
+
+
+        draw.text(
+
+            shadow,
+
+            text,
+
+            font=font,
+
+            fill=(
+
+                0,
+
+                0,
+
+                0,
+
+                opacity
+
+            )
+
+        )
+
+
+
+        # основной текст
+
+        draw.text(
+
+            xy,
+
+            text,
+
+            font=font,
+
+            fill=(
+
+                color[0],
+
+                color[1],
+
+                color[2],
+
+                opacity
+
+            )
+
+        )
+
+
+
+        result = Image.alpha_composite(
+
+            image,
+
+            layer
+
+        )
+
+
+
+        filename = (
+
+            "watermarked_"
+
+            +
+
+            os.path.basename(path)
+
+        )
+
+
+        output = os.path.join(
+
+            OUTPUT_DIR,
+
+            filename
+
+        )
+
+
+
+        result.convert(
+
+            "RGB"
+
+        ).save(
+
+            output,
+
+            quality=95
+
+        )
+
+
+
+        print(
+
+            "✅ WATERMARK CREATED:",
+
+            output
+
+        )
+
+
+        return output
+
+
+
+    except Exception as e:
+
+
+        print(
+
+            "❌ WATERMARK ERROR:",
+
+            e
+
+        )
+
+
+        return None
