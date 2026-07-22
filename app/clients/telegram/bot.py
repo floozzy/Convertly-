@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import os
-
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
 from app.services.bot_service import build_help_message, build_start_message
+from app.services.token_service import get_bot_token
 from config.settings import BOT_TOKEN
 
 
@@ -22,7 +21,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 def build_app() -> Application:
-    token = BOT_TOKEN or os.getenv("BOT_TOKEN", "")
+    token = BOT_TOKEN or get_bot_token()
     if not token:
         raise RuntimeError("BOT_TOKEN is not set")
 
