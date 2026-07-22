@@ -2,12 +2,16 @@ import os
 
 
 from telegram import Update
-
 from telegram.ext import ContextTypes
 
 
-
 from services.image.info import image_info
+
+
+from utils.images import (
+    save_image,
+    get_image
+)
 
 
 
@@ -30,46 +34,10 @@ os.makedirs(
 
 
 
-# =====================================
-# LAST USER IMAGES STORAGE
-# =====================================
-
-
-LAST_IMAGES = {}
-
-
-
-def save_last_image(
-    user_id,
-    path
-):
-
-    LAST_IMAGES[user_id] = path
-
-
-    print(
-        "SAVED IMAGE:",
-        path
-    )
-
-
-
-
-
-def get_last_image(
-    user_id
-):
-
-    return LAST_IMAGES.get(
-        user_id
-    )
-
-
-
 
 
 # =====================================
-# PHOTO RECEIVER
+# PHOTO HANDLER
 # =====================================
 
 
@@ -80,7 +48,6 @@ async def photo_handler(
     context: ContextTypes.DEFAULT_TYPE
 
 ):
-
 
     try:
 
@@ -109,9 +76,19 @@ async def photo_handler(
 
         filename = (
 
-            f"{user_id}_"
+            str(user_id)
 
-            f"{photo.file_id}.jpg"
+            +
+
+            "_"
+
+            +
+
+            str(photo.file_id)
+
+            +
+
+            ".jpg"
 
         )
 
@@ -135,7 +112,7 @@ async def photo_handler(
 
 
 
-        save_last_image(
+        save_image(
 
             user_id,
 
@@ -148,7 +125,16 @@ async def photo_handler(
         await update.message.reply_text(
 
             "✅ Фото получено!\n\n"
-            "Выберите действие:"
+            "Теперь выберите действие."
+
+        )
+
+
+        print(
+
+            "IMAGE SAVED:",
+
+            path
 
         )
 
@@ -169,7 +155,10 @@ async def photo_handler(
         await update.message.reply_text(
 
             "❌ Ошибка загрузки фото:\n"
-            f"{e}"
+
+            +
+
+            str(e)
 
         )
 
@@ -177,8 +166,10 @@ async def photo_handler(
 
 
 
+
+
 # =====================================
-# IMAGE INFORMATION
+# IMAGE INFO
 # =====================================
 
 
@@ -198,7 +189,7 @@ async def image_info_action(
 
 
 
-    path = get_last_image(
+    path = get_image(
 
         user_id
 
@@ -211,7 +202,8 @@ async def image_info_action(
 
         await query.message.reply_text(
 
-            "❌ Сначала отправьте фотографию."
+            "❌ Фото не найдено.\n"
+            "Сначала отправьте фотографию."
 
         )
 
@@ -253,10 +245,15 @@ async def image_info_action(
 
         await query.message.reply_text(
 
-            "❌ Ошибка анализа:\n"
-            f"{e}"
+            "❌ Ошибка анализа фото:\n"
+
+            +
+
+            str(e)
 
         )
+
+
 
 
 
@@ -283,7 +280,7 @@ async def image_convert_action(
 
 
 
-    path = get_last_image(
+    path = get_image(
 
         user_id
 
@@ -296,9 +293,10 @@ async def image_convert_action(
 
         await query.message.reply_text(
 
-            "❌ Нет изображения."
+            "❌ Фото не найдено."
 
         )
+
 
         return
 
@@ -306,9 +304,12 @@ async def image_convert_action(
 
     await query.message.reply_text(
 
-        "🔄 Конвертация будет добавлена."
+        "🔄 Конвертация пока подключается."
 
     )
+
+
+
 
 
 
@@ -335,7 +336,7 @@ async def image_compress_action(
 
 
 
-    path = get_last_image(
+    path = get_image(
 
         user_id
 
@@ -348,9 +349,10 @@ async def image_compress_action(
 
         await query.message.reply_text(
 
-            "❌ Нет изображения."
+            "❌ Фото не найдено."
 
         )
+
 
         return
 
@@ -358,6 +360,6 @@ async def image_compress_action(
 
     await query.message.reply_text(
 
-        "🗜 Сжатие будет добавлено."
+        "🗜 Сжатие пока подключается."
 
     )
