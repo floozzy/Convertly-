@@ -13,6 +13,7 @@ from telegram.ext import (
 )
 
 from app.services.bot_service import build_help_message, build_start_message
+from app.services.image_processing import process_photo_bytes
 from app.services.menu_service import build_main_menu, build_photo_menu
 from app.services.telegram_runtime import configure_runtime
 from app.services.token_service import get_bot_token
@@ -30,7 +31,16 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text("📸 Фото получено. Выберите действие:", reply_markup=build_photo_menu())
+    message = update.message
+    if message is None or message.photo is None:
+        return
+
+    photo = message.photo[-1]
+    file = await context.bot.get_file(photo.file_id)
+    photo_bytes = await file.download_as_bytearray()
+
+    context.user_data["pending_photo"] = bytes(photo_bytes)
+    await message.reply_text("📸 Фото получено. Выберите действие:", reply_markup=build_photo_menu())
 
 
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -53,7 +63,15 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await query.edit_message_text(build_start_message(), reply_markup=build_main_menu())
     elif data.startswith("op:"):
         operation = data.split(":", 1)[1]
-        await query.edit_message_text(f"⚙️ Выбрана операция: {operation}", reply_markup=build_main_menu())
+        photo_bytes = context.user_data.get("pending_photo")
+        if not photo_bytes:
+            await query.edit_message_text("📸 Сначала пришлите фото", reply_markup=build_main_menu())
+            return
+
+        processed = process_photo_bytes(photo_bytes, operation)
+        await query.edit_message_text("⚙️ Обрабатываю фото...")
+        await context.bot.send_photo(query.from_user.id if query.from_user else None, processed, caption=f"✅ Обработано: {operation}")
+        await query.edit_message_text(f"✅ Готово: {operation}", reply_markup=build_main_menu())
 
 
 def build_app() -> Application:
