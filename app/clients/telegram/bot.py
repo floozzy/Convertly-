@@ -95,6 +95,10 @@ def build_app() -> Application:
 
 def main() -> None:
     logger.info("Starting Convertly Telegram bot...")
-    app = build_app()
-    logger.info("Telegram bot connected and polling for updates")
-    app.run_polling()
+    try:
+        app = build_app()
+        logger.info("Telegram bot connected and polling for updates")
+        app.run_polling()
+    except Exception as exc:
+        logger.exception("Telegram bot failed to start: %s", exc)
+        raise
