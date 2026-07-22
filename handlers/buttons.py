@@ -1,11 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from utils.state import get_file
-from services.image_tools import (
-    convert_image,
-    compress_image
-)
+from handlers.profile import profile_command
 
 
 async def button_handler(
@@ -17,62 +13,48 @@ async def button_handler(
 
     await query.answer()
 
+    data = query.data
 
-    user_id = query.from_user.id
+    if data == "convert":
 
-
-    path = get_file(user_id)
-
-
-    if query.data in [
-        "jpg_png",
-        "png_jpg",
-        "compress"
-    ]:
-
-
-        if not path:
-
-            await query.edit_message_text(
-                "❌ Сначала отправьте файл."
-            )
-
-            return
-
-
-    if query.data == "jpg_png":
-
-        result = convert_image(
-            path,
-            "png"
+        await query.message.reply_text(
+            "📂 Отправьте мне файл для конвертации."
         )
 
-        await query.message.reply_document(
-            document=open(result, "rb"),
-            caption="✅ JPG → PNG готово!"
+    elif data == "profile":
+
+        class FakeMessage:
+            def __init__(self, message):
+                self.reply_text = message.reply_text
+
+        class FakeUpdate:
+            def __init__(self, original):
+                self.effective_user = original.effective_user
+                self.message = FakeMessage(original.callback_query.message)
+
+        await profile_command(
+            FakeUpdate(update),
+            context
         )
 
+    elif data == "premium":
 
-    elif query.data == "png_jpg":
-
-        result = convert_image(
-            path,
-            "jpg"
+        await query.message.reply_text(
+            "👑 Premium скоро появится.\n\n"
+            "Покупка будет доступна за Telegram Stars ⭐"
         )
 
-        await query.message.reply_document(
-            document=open(result, "rb"),
-            caption="✅ PNG → JPG готово!"
+    elif data == "help":
+
+        await query.message.reply_text(
+            "📚 Convertly\n\n"
+            "• Отправьте файл.\n"
+            "• Выберите нужную конвертацию.\n"
+            "• Получите готовый результат."
         )
 
+    else:
 
-    elif query.data == "compress":
-
-        result = compress_image(
-            path
-        )
-
-        await query.message.reply_document(
-            document=open(result, "rb"),
-            caption="✅ Изображение сжато!"
+        await query.message.reply_text(
+            "⚠️ Неизвестная команда."
         )
