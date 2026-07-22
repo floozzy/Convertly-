@@ -22,6 +22,7 @@ from utils.state import (
 
 
 
+
 UPLOAD_DIR = "files/uploads"
 
 
@@ -35,7 +36,7 @@ os.makedirs(
 
 
 # =====================================
-# PHOTO RECEIVER
+# PHOTO HANDLER
 # =====================================
 
 
@@ -57,16 +58,10 @@ async def photo_handler(
         user_id = update.effective_user.id
 
 
-        print(
-            "PHOTO FROM USER:",
-            user_id
-        )
 
-
-
-        # ==========================
-        # CHECK ACTION MODE
-        # ==========================
+        # ==============================
+        # CONVERT MODE
+        # ==============================
 
 
         if get_state(
@@ -87,26 +82,30 @@ async def photo_handler(
             )
 
 
-            print(
-                "CONVERT PHOTO RECEIVED"
-            )
-
-
             await update.message.reply_text(
 
                 "🔄 Фото получено!\n"
-                "Начинаю конвертацию..."
+                "Запускаю конвертацию..."
 
             )
 
 
+            print(
 
-            # тут позже подключим конвертер
+                "CONVERT PHOTO RECEIVED"
+
+            )
+
 
             return
 
 
 
+
+
+        # ==============================
+        # WATERMARK MODE
+        # ==============================
 
 
         if get_state(
@@ -127,15 +126,17 @@ async def photo_handler(
             )
 
 
-            print(
-                "WATERMARK PHOTO RECEIVED"
-            )
-
-
             await update.message.reply_text(
 
                 "💧 Фото получено!\n"
-                "Накладываю водяной знак..."
+                "Добавляю водяной знак..."
+
+            )
+
+
+            print(
+
+                "WATERMARK PHOTO RECEIVED"
 
             )
 
@@ -146,9 +147,10 @@ async def photo_handler(
 
 
 
-        # ==========================
-        # NORMAL PHOTO SAVE
-        # ==========================
+
+        # ==============================
+        # NORMAL SAVE
+        # ==============================
 
 
         photo = update.message.photo[-1]
@@ -204,6 +206,7 @@ async def photo_handler(
         print(
 
             "IMAGE SAVED:",
+
             path
 
         )
@@ -212,7 +215,7 @@ async def photo_handler(
 
         await update.message.reply_text(
 
-            "✅ Фото получено!\n\n"
+            "✅ Фото получено!\n"
             "Выберите действие 👇"
 
         )
@@ -225,6 +228,7 @@ async def photo_handler(
         print(
 
             "PHOTO ERROR:",
+
             e
 
         )
@@ -244,8 +248,10 @@ async def photo_handler(
 
 
 
+
+
 # =====================================
-# IMAGE INFO
+# INFO
 # =====================================
 
 
@@ -256,7 +262,6 @@ async def image_info_action(
     context
 
 ):
-
 
     query = update.callback_query
 
@@ -282,7 +287,7 @@ async def image_info_action(
 
         await query.message.reply_text(
 
-            "❌ Отправьте фотографию для анализа."
+            "❌ Сначала отправьте фотографию."
 
         )
 
@@ -299,7 +304,6 @@ async def image_info_action(
             path
 
         )
-
 
 
         await query.message.reply_text(
@@ -327,9 +331,8 @@ async def image_info_action(
 
 
 
-
 # =====================================
-# CONVERT BUTTON
+# CONVERT
 # =====================================
 
 
@@ -368,8 +371,7 @@ async def image_convert_action(
     await query.message.reply_text(
 
         "🔄 <b>Конвертация</b>\n\n"
-        "📷 Отправьте фотографию, "
-        "которую нужно конвертировать.",
+        "📷 Отправьте фотографию.",
 
         parse_mode="HTML"
 
@@ -381,8 +383,9 @@ async def image_convert_action(
 
 
 
+
 # =====================================
-# COMPRESS BUTTON
+# COMPRESS
 # =====================================
 
 
@@ -421,8 +424,8 @@ async def image_compress_action(
     await query.message.reply_text(
 
         "🗜 <b>Сжатие</b>\n\n"
-        "📷 Отправьте фотографию для уменьшения размера.",
+        "📷 Отправьте фотографию.",
 
         parse_mode="HTML"
 
-        )
+    )
