@@ -5,40 +5,29 @@ import os
 
 from services.image.hashes import calculate_hashes
 
-
 from services.image.metadata import (
     get_file_dates,
     get_metadata
 )
 
-
 from services.image.colors import (
     analyze_colors
 )
-
 
 from services.image.quality import (
     analyze_quality
 )
 
-
 from services.image.camera import (
     get_camera_info
 )
-
 
 from services.image.gps import (
     get_gps_info
 )
 
-
 from services.image.ocr import (
     extract_text
-)
-
-
-from services.image.faces import (
-    detect_faces
 )
 
 
@@ -60,10 +49,6 @@ def image_info(path):
 
     return {
 
-
-        # =====================
-        # FILE
-        # =====================
 
         "name":
 
@@ -89,10 +74,6 @@ def image_info(path):
 
 
 
-        # =====================
-        # IMAGE
-        # =====================
-
         "width":
 
             width,
@@ -117,10 +98,6 @@ def image_info(path):
 
 
 
-        # =====================
-        # HASHES
-        # =====================
-
         "hashes":
 
             calculate_hashes(
@@ -128,10 +105,6 @@ def image_info(path):
             ),
 
 
-
-        # =====================
-        # DATES
-        # =====================
 
         "dates":
 
@@ -141,10 +114,6 @@ def image_info(path):
 
 
 
-        # =====================
-        # METADATA
-        # =====================
-
         "metadata":
 
             get_metadata(
@@ -152,10 +121,6 @@ def image_info(path):
             ),
 
 
-
-        # =====================
-        # COLORS
-        # =====================
 
         "colors":
 
@@ -165,10 +130,6 @@ def image_info(path):
 
 
 
-        # =====================
-        # QUALITY
-        # =====================
-
         "quality":
 
             analyze_quality(
@@ -176,10 +137,6 @@ def image_info(path):
             ),
 
 
-
-        # =====================
-        # CAMERA
-        # =====================
 
         "camera":
 
@@ -189,10 +146,6 @@ def image_info(path):
 
 
 
-        # =====================
-        # GPS
-        # =====================
-
         "gps":
 
             get_gps_info(
@@ -201,25 +154,9 @@ def image_info(path):
 
 
 
-        # =====================
-        # OCR
-        # =====================
-
         "ocr":
 
             extract_text(
-                path
-            ),
-
-
-
-        # =====================
-        # FACES
-        # =====================
-
-        "faces":
-
-            detect_faces(
                 path
             )
 
