@@ -1,35 +1,55 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
+from database.users import create_user
 
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+async def start_command(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+
+    create_user(
+        update.effective_user
+    )
 
     keyboard = [
+
         [
             InlineKeyboardButton(
-                "📂 Конвертировать файл",
+                "📂 Конвертировать",
                 callback_data="convert"
             )
         ],
+
         [
             InlineKeyboardButton(
                 "👤 Профиль",
                 callback_data="profile"
             )
         ],
+
+        [
+            InlineKeyboardButton(
+                "⭐ Premium",
+                callback_data="premium"
+            )
+        ],
+
         [
             InlineKeyboardButton(
                 "ℹ️ Помощь",
                 callback_data="help"
             )
         ]
+
     ]
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
     await update.message.reply_text(
-        "🚀 Добро пожаловать в Convertly 3.0!\n\n"
-        "Я универсальный бот-конвертер файлов.\n\n"
-        "Выберите действие:",
-        reply_markup=reply_markup
+
+        "🚀 Добро пожаловать в Convertly!\n\n"
+        "Самый удобный конвертер файлов.",
+
+        reply_markup=InlineKeyboardMarkup(keyboard)
+
     )
