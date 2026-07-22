@@ -1,0 +1,54 @@
+nc def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "🚀 Convertly запущен!\n\n"
+        "Отправь мне файл, и я буду его обрабатывать."
+    )
+
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "📌 Команды:\n\n"
+        "/start — запуск\n"
+        "/help — помощь"
+    )
+
+
+async def file_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    file = update.message.document
+
+    await update.message.reply_text(
+        f"📥 Получил файл:\n{file.file_name}"
+    )
+
+
+def main():
+
+    if not TOKEN:
+        print("❌ Нет BOT_TOKEN в .env")
+        return
+
+
+    app = Application.builder().token(TOKEN).build()
+
+
+    app.add_handler(
+        CommandHandler("start", start)
+    )
+
+    app.add_handler(
+        CommandHandler("help", help_command)
+    )
+
+    app.add_handler(
+        MessageHandler(filters.Document.ALL, file_handler)
+    )
+
+
+    print("🚀 Convertly работает!")
+
+    app.run_polling()
+
+
+if name == "main":
+    main()	
+
