@@ -15,43 +15,90 @@ async def button_handler(
 
     data = query.data
 
-    if data == "convert":
+
+    if data == "profile":
 
         await query.message.reply_text(
-            "📂 Отправьте мне файл для конвертации."
+            "Используйте команду:\n/profile"
         )
 
-    elif data == "profile":
-
-        class FakeMessage:
-            def __init__(self, message):
-                self.reply_text = message.reply_text
-
-        class FakeUpdate:
-            def __init__(self, original):
-                self.effective_user = original.effective_user
-                self.message = FakeMessage(original.callback_query.message)
-
-        await profile_command(
-            FakeUpdate(update),
-            context
-        )
-
-    elif data == "premium":
-
-        await query.message.reply_text(
-            "👑 Premium скоро появится.\n\n"
-            "Покупка будет доступна за Telegram Stars ⭐"
-        )
 
     elif data == "help":
 
         await query.message.reply_text(
             "📚 Convertly\n\n"
-            "• Отправьте файл.\n"
-            "• Выберите нужную конвертацию.\n"
-            "• Получите готовый результат."
+            "Отправьте файл, и я помогу его обработать."
         )
+
+
+    elif data == "premium":
+
+        await query.message.reply_text(
+            "⭐ Premium скоро будет доступен."
+        )
+
+
+    elif data == "convert":
+
+        await query.message.reply_text(
+            "📂 Отправьте файл для обработки."
+        )
+
+
+    # IMAGE ENGINE
+
+    elif data == "img_convert":
+
+        await query.message.reply_text(
+            "🔄 Конвертация изображений\n\n"
+            "Скоро здесь будет выбор формата:\n"
+            "JPG → PNG\n"
+            "PNG → JPG\n"
+            "WEBP → JPG"
+        )
+
+
+    elif data == "img_compress":
+
+        await query.message.reply_text(
+            "📦 Сжатие изображения\n\n"
+            "Функция подключается."
+        )
+
+
+    elif data == "img_resize":
+
+        await query.message.reply_text(
+            "📐 Изменение размера\n\n"
+            "Выберите размер в следующем обновлении."
+        )
+
+
+    elif data == "img_effects":
+
+        await query.message.reply_text(
+            "✨ Эффекты:\n\n"
+            "• Ч/Б\n"
+            "• Размытие\n"
+            "• Отражение"
+        )
+
+
+    elif data == "img_watermark":
+
+        await query.message.reply_text(
+            "💧 Водяной знак\n\n"
+            "Готовлю обработку."
+        )
+
+
+    elif data == "img_info":
+
+        await query.message.reply_text(
+            "📊 Информация об изображении\n\n"
+            "Размеры и формат будут показаны здесь."
+        )
+
 
     else:
 
