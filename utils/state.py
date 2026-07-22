@@ -46,3 +46,19 @@ def clear_state(
     if user_id in user_states:
 
         del user_states[user_id]
+
+
+
+
+
+def has_state(
+    user_id,
+    key
+):
+
+    if user_id not in user_states:
+
+        return False
+
+
+    return key in user_states[user_id]
