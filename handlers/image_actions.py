@@ -15,10 +15,18 @@ UPLOAD_DIR = "files/uploads"
 
 def get_last_image(user_id):
 
+    if not os.path.exists(
+        UPLOAD_DIR
+    ):
+        return None
+
+
     files = [
 
         f
-        for f in os.listdir(UPLOAD_DIR)
+        for f in os.listdir(
+            UPLOAD_DIR
+        )
 
         if f.startswith(
             str(user_id)
@@ -30,6 +38,16 @@ def get_last_image(user_id):
     if not files:
 
         return None
+
+
+    files.sort(
+        key=lambda x: os.path.getmtime(
+            os.path.join(
+                UPLOAD_DIR,
+                x
+            )
+        )
+    )
 
 
     return os.path.join(
@@ -49,11 +67,8 @@ async def image_compress_action(
     await query.answer()
 
 
-    user_id = query.from_user.id
-
-
     path = get_last_image(
-        user_id
+        query.from_user.id
     )
 
 
@@ -78,7 +93,7 @@ async def image_compress_action(
 
 
     add_history(
-        user_id,
+        query.from_user.id,
         path,
         "Сжатие изображения"
     )
@@ -88,6 +103,7 @@ async def image_compress_action(
         result,
         "rb"
     ) as file:
+
 
         await query.message.reply_document(
             document=file,
@@ -106,11 +122,8 @@ async def image_convert_action(
     await query.answer()
 
 
-    user_id = query.from_user.id
-
-
     path = get_last_image(
-        user_id
+        query.from_user.id
     )
 
 
@@ -125,7 +138,7 @@ async def image_convert_action(
 
 
     await query.message.reply_text(
-        "🔄 Конвертирую JPG → PNG..."
+        "🔄 Конвертирую изображение..."
     )
 
 
@@ -136,9 +149,9 @@ async def image_convert_action(
 
 
     add_history(
-        user_id,
+        query.from_user.id,
         path,
-        "JPG → PNG"
+        "Конвертация PNG"
     )
 
 
@@ -147,9 +160,10 @@ async def image_convert_action(
         "rb"
     ) as file:
 
+
         await query.message.reply_document(
             document=file,
-            caption="✅ JPG → PNG готово"
+            caption="✅ Конвертация завершена"
         )
 
 
@@ -164,11 +178,8 @@ async def image_info_action(
     await query.answer()
 
 
-    user_id = query.from_user.id
-
-
     path = get_last_image(
-        user_id
+        query.from_user.id
     )
 
 
@@ -187,143 +198,190 @@ async def image_info_action(
     )
 
 
-
     data = image_info(
         path
     )
 
 
-    colors = data["colors"]
-
-
     text = (
-
-        "📊 <b>Image Inspector Pro</b>\n\n"
-
-
-        "🗂 <b>Файл</b>\n"
-
-        f"📄 {data['name']}\n"
-
-        f"🖼 Формат: {data['format']}\n"
-
-        f"🎨 Режим: {data['mode']}\n"
-
-        f"💾 Размер: {data['size_mb']} MB\n\n"
-
-
-
-        "📐 <b>Изображение</b>\n"
-
-        f"Ширина: {data['width']} px\n"
-
-        f"Высота: {data['height']} px\n"
-
-        f"Пикселей: {data['pixels']:,}\n"
-
-        f"Соотношение: {data['ratio']}\n\n"
-
-
-
-        "🎨 <b>Цветовой анализ</b>\n"
-
-        f"Средний цвет: {colors['average_color']}\n"
-
-        f"☀ Яркость: {colors['brightness']}\n"
-
-        f"◼ Контраст: {colors['contrast']}\n"
-
-        f"🌈 Насыщенность: {colors['saturation']}\n\n"
-
-
-
-        "🎨 <b>Популярные цвета:</b>\n"
-
+        "📊 <b>Convertly Image Inspector Pro</b>\n\n"
     )
 
 
+    # FILE
 
-    for color in colors["popular_colors"]:
+    text += (
+        "━━━━━━━━━━━━━━\n"
+        "🗂 <b>Файл</b>\n"
+        f"📄 {data['name']}\n"
+        f"🖼 Формат: {data['format']}\n"
+        f"🎨 Режим: {data['mode']}\n"
+        f"💾 Размер: {data['size_mb']} MB\n\n"
+    )
+
+
+    # IMAGE
+
+    text += (
+        "━━━━━━━━━━━━━━\n"
+        "📐 <b>Изображение</b>\n"
+        f"↔️ {data['width']} px\n"
+        f"↕️ {data['height']} px\n"
+        f"🔢 {data['pixels']:,} пикселей\n"
+        f"📏 Соотношение: {data['ratio']}\n\n"
+    )
+
+
+    # COLORS
+
+    colors = data.get(
+        "colors"
+    )
+
+
+    if colors:
 
         text += (
+            "━━━━━━━━━━━━━━\n"
+            "🎨 <b>Цветовой анализ</b>\n"
+            f"Средний цвет: {colors['average_color']}\n"
+            f"☀ Яркость: {colors['brightness']}\n"
+            f"◼ Контраст: {colors['contrast']}\n"
+            f"🌈 Насыщенность: {colors['saturation']}\n\n"
+        )
 
-            f"{color['hex']} — "
-            f"{color['percent']}%\n"
 
+        text += "🎨 Топ цветов:\n"
+
+
+        for color in colors["popular_colors"]:
+
+            text += (
+                f"{color['hex']} — "
+                f"{color['percent']}%\n"
+            )
+
+
+    # QUALITY
+
+    quality = data.get(
+        "quality"
+    )
+
+
+    if quality:
+
+        text += (
+            "\n━━━━━━━━━━━━━━\n"
+            "🧠 <b>Качество</b>\n"
+            f"⭐ {quality['score']}/100\n"
+            f"{quality['verdict']}\n"
+            f"🔍 Резкость: {quality['sharpness']}\n"
+            f"☀ Свет: {quality['light_status']}\n"
+            f"🌫 Шум: {quality['noise']}\n\n"
         )
 
 
 
-    text += "\n🔐 <b>Хэши</b>\n"
+    # CAMERA
 
-    text += (
-
-        f"MD5:\n"
-        f"<code>{data['hashes']['md5']}</code>\n\n"
-
-        f"SHA1:\n"
-        f"<code>{data['hashes']['sha1']}</code>\n\n"
-
-        f"SHA256:\n"
-        f"<code>{data['hashes']['sha256']}</code>\n\n"
-
+    camera = data.get(
+        "camera"
     )
 
 
+    if camera:
 
-    text += (
 
-        "🕒 <b>Даты</b>\n"
+        text += (
+            "━━━━━━━━━━━━━━\n"
+            "📷 <b>Камера</b>\n"
+            f"🏭 Производитель: {camera['maker']}\n"
+            f"📱 Модель: {camera['model']}\n"
+            f"🔭 Объектив: {camera['lens']}\n"
+            f"ISO: {camera['iso']}\n"
+            f"Выдержка: {camera['shutter']}\n"
+            f"Диафрагма: {camera['aperture']}\n"
+            f"Фокус: {camera['focal']}\n\n"
+        )
 
-        f"Создан: {data['dates']['created']}\n"
 
-        f"Изменён: {data['dates']['modified']}\n\n"
 
+    # GPS
+
+    gps = data.get(
+        "gps"
     )
 
 
-
-    exif = data["metadata"]["exif"]
-
-
-    if exif:
-
-        text += "📷 <b>EXIF найден:</b>\n"
+    if gps:
 
 
-        count = 0
+        text += (
+            "━━━━━━━━━━━━━━\n"
+            "🌍 <b>GPS Intelligence</b>\n"
+            f"📍 {gps['latitude']}, {gps['longitude']}\n"
+        )
 
 
-        for key, value in exif.items():
+        if "altitude" in gps:
 
             text += (
-                f"{key}: {value}\n"
+                f"⛰ Высота: {gps['altitude']} м\n"
             )
 
-            count += 1
+
+        if "location" in gps:
 
 
-            if count >= 15:
+            loc = gps["location"]
 
-                text += (
-                    "...и другие данные"
-                )
 
-                break
+            text += (
+                "\n🏙 <b>Место:</b>\n"
+                f"🌎 {loc['country']}\n"
+                f"🏙 {loc['city']}\n"
+                f"📌 {loc['district']}\n"
+                f"🛣 {loc['road']}\n"
+            )
+
+
+        text += (
+            "\n🗺 Карта:\n"
+            f"{gps['maps']}\n"
+        )
+
 
 
     else:
 
         text += (
-            "📷 EXIF: отсутствует\n"
+            "\n━━━━━━━━━━━━━━\n"
+            "🌍 GPS: отсутствует\n"
+        )
+
+
+
+    # HASHES
+
+    hashes = data.get(
+        "hashes"
+    )
+
+
+    if hashes:
+
+
+        text += (
+            "\n━━━━━━━━━━━━━━\n"
+            "🔐 <b>Хэши</b>\n"
+            f"MD5:\n<code>{hashes['md5']}</code>\n\n"
+            f"SHA256:\n<code>{hashes['sha256']}</code>\n"
         )
 
 
 
     await query.message.reply_text(
-
         text,
-
         parse_mode="HTML"
-
-    )
+        )
