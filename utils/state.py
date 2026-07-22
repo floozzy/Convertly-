@@ -1,4 +1,4 @@
-user_states = {}
+states = {}
 
 
 
@@ -8,12 +8,12 @@ def set_state(
     value
 ):
 
-    if user_id not in user_states:
+    if user_id not in states:
 
-        user_states[user_id] = {}
+        states[user_id] = {}
 
 
-    user_states[user_id][key] = value
+    states[user_id][key] = value
 
 
 
@@ -25,14 +25,18 @@ def get_state(
     default=None
 ):
 
-    if user_id not in user_states:
+    return states.get(
 
-        return default
+        user_id,
 
+        {}
 
-    return user_states[user_id].get(
+    ).get(
+
         key,
+
         default
+
     )
 
 
@@ -40,25 +44,40 @@ def get_state(
 
 
 def clear_state(
-    user_id
-):
-
-    if user_id in user_states:
-
-        del user_states[user_id]
-
-
-
-
-
-def has_state(
     user_id,
-    key
+    key=None
 ):
 
-    if user_id not in user_states:
+    if user_id not in states:
 
-        return False
+        return
 
 
-    return key in user_states[user_id]
+
+    # очистить только один режим
+
+    if key:
+
+        states[user_id].pop(
+
+            key,
+
+            None
+
+        )
+
+
+        return
+
+
+
+
+    # полностью очистить пользователя
+
+    states.pop(
+
+        user_id,
+
+        None
+
+    )
