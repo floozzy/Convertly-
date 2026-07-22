@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 from telegram import Update
 from telegram.ext import (
     Application,
@@ -15,6 +17,8 @@ from app.services.menu_service import build_main_menu, build_photo_menu
 from app.services.telegram_runtime import configure_runtime
 from app.services.token_service import get_bot_token
 from config.settings import BOT_TOKEN
+
+logger = logging.getLogger(__name__)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -67,5 +71,7 @@ def build_app() -> Application:
 
 
 def main() -> None:
+    logger.info("Starting Convertly Telegram bot...")
     app = build_app()
+    logger.info("Telegram bot connected and polling for updates")
     app.run_polling()
