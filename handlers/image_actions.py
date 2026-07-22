@@ -17,18 +17,9 @@ from utils.images import (
 
 UPLOAD_DIR = "files/uploads"
 
-PROCESSED_DIR = "files/processed"
-
-
 
 os.makedirs(
     UPLOAD_DIR,
-    exist_ok=True
-)
-
-
-os.makedirs(
-    PROCESSED_DIR,
     exist_ok=True
 )
 
@@ -49,14 +40,16 @@ async def photo_handler(
 
 ):
 
-    try:
+    print("🔥 PHOTO HANDLER WORKS")
 
+
+    try:
 
         user_id = update.effective_user.id
 
 
         print(
-            "PHOTO RECEIVED:",
+            "USER:",
             user_id
         )
 
@@ -66,7 +59,7 @@ async def photo_handler(
 
 
 
-        telegram_file = await context.bot.get_file(
+        file = await context.bot.get_file(
 
             photo.file_id
 
@@ -76,19 +69,9 @@ async def photo_handler(
 
         filename = (
 
-            str(user_id)
+            f"{user_id}_"
 
-            +
-
-            "_"
-
-            +
-
-            str(photo.file_id)
-
-            +
-
-            ".jpg"
+            f"{photo.file_id}.jpg"
 
         )
 
@@ -104,7 +87,7 @@ async def photo_handler(
 
 
 
-        await telegram_file.download_to_drive(
+        await file.download_to_drive(
 
             path
 
@@ -122,19 +105,20 @@ async def photo_handler(
 
 
 
-        await update.message.reply_text(
+        print(
 
-            "✅ Фото получено!\n\n"
-            "Теперь выберите действие."
+            "PHOTO SAVED:",
+
+            path
 
         )
 
 
-        print(
 
-            "IMAGE SAVED:",
+        await update.message.reply_text(
 
-            path
+            "✅ Фото получено!\n\n"
+            "Выберите действие 👇"
 
         )
 
@@ -154,11 +138,9 @@ async def photo_handler(
 
         await update.message.reply_text(
 
-            "❌ Ошибка загрузки фото:\n"
+            "❌ Ошибка обработки фото:\n"
 
-            +
-
-            str(e)
+            + str(e)
 
         )
 
@@ -181,8 +163,11 @@ async def image_info_action(
 
 ):
 
-
     query = update.callback_query
+
+
+    await query.answer()
+
 
 
     user_id = query.from_user.id
@@ -203,7 +188,7 @@ async def image_info_action(
         await query.message.reply_text(
 
             "❌ Фото не найдено.\n"
-            "Сначала отправьте фотографию."
+            "Сначала отправьте изображение."
 
         )
 
@@ -215,7 +200,7 @@ async def image_info_action(
     try:
 
 
-        data = image_info(
+        result = image_info(
 
             path
 
@@ -225,7 +210,7 @@ async def image_info_action(
 
         await query.message.reply_text(
 
-            data
+            result
 
         )
 
@@ -245,14 +230,11 @@ async def image_info_action(
 
         await query.message.reply_text(
 
-            "❌ Ошибка анализа фото:\n"
+            "❌ Ошибка анализа:\n"
 
-            +
-
-            str(e)
+            + str(e)
 
         )
-
 
 
 
@@ -272,8 +254,11 @@ async def image_convert_action(
 
 ):
 
-
     query = update.callback_query
+
+
+    await query.answer()
+
 
 
     user_id = query.from_user.id
@@ -297,17 +282,15 @@ async def image_convert_action(
 
         )
 
-
         return
 
 
 
     await query.message.reply_text(
 
-        "🔄 Конвертация пока подключается."
+        "🔄 Конвертация подключается."
 
     )
-
 
 
 
@@ -328,8 +311,11 @@ async def image_compress_action(
 
 ):
 
-
     query = update.callback_query
+
+
+    await query.answer()
+
 
 
     user_id = query.from_user.id
@@ -353,13 +339,12 @@ async def image_compress_action(
 
         )
 
-
         return
 
 
 
     await query.message.reply_text(
 
-        "🗜 Сжатие пока подключается."
+        "🗜 Сжатие подключается."
 
     )
