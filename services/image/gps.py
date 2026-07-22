@@ -1,5 +1,6 @@
 from PIL import Image, ExifTags
 
+
 from services.image.location import get_location
 
 
@@ -35,7 +36,6 @@ def convert_coordinate(value):
             seconds / 3600,
 
             6
-
         )
 
     except:
@@ -47,156 +47,209 @@ def convert_coordinate(value):
 
 def get_gps_info(path):
 
-    image = Image.open(
-        path
-    )
+    try:
 
-
-    exif = image.getexif()
-
-
-    if not exif:
-
-        return None
-
-
-
-    gps = None
-
-
-    for key in exif:
-
-        tag = ExifTags.TAGS.get(
-            key
+        image = Image.open(
+            path
         )
 
 
-        if tag == "GPSInfo":
-
-            gps = exif[key]
-
-            break
+        exif = image.getexif()
 
 
+        if not exif:
 
-    if not gps:
-
-        return None
+            return None
 
 
 
-    gps_data = {}
+        gps_raw = None
 
 
-    for key, value in gps.items():
+        # ищем GPSInfo
 
-        name = ExifTags.GPSTAGS.get(
-            key,
-            key
-        )
+        for key, value in exif.items():
 
-        gps_data[name] = value
-
-
-
-    if not gps_data.get(
-        "GPSLatitude"
-    ):
-
-        return None
-
-
-
-    lat = convert_coordinate(
-        gps_data["GPSLatitude"]
-    )
-
-
-    lon = convert_coordinate(
-        gps_data["GPSLongitude"]
-    )
-
-
-
-    if gps_data.get(
-        "GPSLatitudeRef"
-    ) == "S":
-
-        lat = -lat
-
-
-
-    if gps_data.get(
-        "GPSLongitudeRef"
-    ) == "W":
-
-        lon = -lon
-
-
-
-    result = {
-
-
-        "latitude":
-
-            lat,
-
-
-        "longitude":
-
-            lon,
-
-
-        "maps":
-
-            f"https://maps.google.com/?q={lat},{lon}"
-
-    }
-
-
-
-    location = get_location(
-
-        lat,
-
-        lon
-
-    )
-
-
-    if location:
-
-        result["location"] = location
-
-
-
-    altitude = gps_data.get(
-        "GPSAltitude"
-    )
-
-
-    if altitude:
-
-        try:
-
-            result["altitude"] = round(
-
-                float(
-                    altitude[0]
-                )
-                /
-                float(
-                    altitude[1]
-                ),
-
-                1
-
+            tag = ExifTags.TAGS.get(
+                key
             )
 
-        except:
 
-            pass
+            if tag == "GPSInfo":
+
+                gps_raw = value
+
+                break
 
 
 
-    return result
+        if gps_raw is None:
+
+            return None
+
+
+
+        # Pillow иногда отдаёт число вместо словаря
+
+        if isinstance(
+            gps_raw,
+            int
+        ):
+
+            try:
+
+                gps_raw = exif.get_ifd(
+                    gps_raw
+                )
+
+            except:
+
+                return None
+
+
+
+        if not isinstance(
+            gps_raw,
+            dict
+        ):
+
+            return None
+
+
+
+        gps_data = {}
+
+
+
+        for key, value in gps_raw.items():
+
+            name = ExifTags.GPSTAGS.get(
+                key,
+                key
+            )
+
+            gps_data[name] = value
+
+
+
+        latitude = gps_data.get(
+            "GPSLatitude"
+        )
+
+
+        longitude = gps_data.get(
+            "GPSLongitude"
+        )
+
+
+        if not latitude or not longitude:
+
+            return None
+
+
+
+        lat = convert_coordinate(
+            latitude
+        )
+
+
+        lon = convert_coordinate(
+            longitude
+        )
+
+
+        if lat is None or lon is None:
+
+            return None
+
+
+
+        if gps_data.get(
+            "GPSLatitudeRef"
+        ) == "S":
+
+            lat = -lat
+
+
+
+        if gps_data.get(
+            "GPSLongitudeRef"
+        ) == "W":
+
+            lon = -lon
+
+
+
+        result = {
+
+
+            "latitude":
+
+                lat,
+
+
+            "longitude":
+
+                lon,
+
+
+            "maps":
+
+                f"https://maps.google.com/?q={lat},{lon}"
+
+        }
+
+
+
+        # город / страна
+
+        location = get_location(
+            lat,
+            lon
+        )
+
+
+        if location:
+
+            result["location"] = location
+
+
+
+        # высота
+
+        altitude = gps_data.get(
+            "GPSAltitude"
+        )
+
+
+        if altitude:
+
+            try:
+
+                result["altitude"] = round(
+
+                    float(
+                        altitude[0]
+                    )
+                    /
+                    float(
+                        altitude[1]
+                    ),
+
+                    1
+
+                )
+
+            except:
+
+                pass
+
+
+
+        return result
+
+
+
+    except Exception:
+
+        return None
