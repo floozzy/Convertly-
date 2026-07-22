@@ -27,7 +27,7 @@ def main():
     )
 
 
-    # Приём файлов
+    # Получение файлов
     app.add_handler(
         MessageHandler(
             filters.Document.ALL,
@@ -36,7 +36,7 @@ def main():
     )
 
 
-    # Кнопки меню
+    # Обработка кнопок
     app.add_handler(
         CallbackQueryHandler(
             button_handler
@@ -44,7 +44,7 @@ def main():
     )
 
 
-    print("🚀 Convertly 3.1 запущен!")
+    print("🚀 Convertly запущен успешно!")
 
 
     app.run_polling()
