@@ -19,83 +19,131 @@ from handlers.buttons import button_handler
 
 from handlers.text_input import text_input_handler
 
-
-
-TOKEN = os.getenv(
-    "BOT_TOKEN"
-)
+from handlers.image_actions import photo_handler
 
 
 
-if not TOKEN:
-
-    TOKEN = "8831427693:AAED6ZtuPdcZnvsAvku-DPNSZ_QsBNzrc0I"
 
 
+# ==============================
+# BOT TOKEN
+# ==============================
+
+
+TOKEN = "8831427693:AAED6ZtuPdcZnvsAvku-DPNSZ_QsBNzrc0I"
+
+
+
+
+
+# ==============================
+# MAIN
+# ==============================
 
 
 def main():
 
 
     app = Application.builder().token(
+
         TOKEN
+
     ).build()
 
 
 
-    # ======================
+
+
+    # ==============================
     # COMMANDS
-    # ======================
+    # ==============================
 
 
     app.add_handler(
 
         CommandHandler(
+
             "start",
+
             start_command
+
         )
 
     )
+
 
 
     app.add_handler(
 
         CommandHandler(
+
             "profile",
+
             profile_command
+
         )
 
     )
 
 
 
-    # ======================
-    # BUTTONS
-    # ======================
-
-
-    app.add_handler(
-
-        CallbackQueryHandler(
-            button_handler
-        )
-
-    )
 
 
 
-    # ======================
-    # TEXT INPUT
-    # ======================
+    # ==============================
+    # PHOTO HANDLER
+    # ==============================
 
 
     app.add_handler(
 
         MessageHandler(
 
-            filters.TEXT
-            &
-            ~filters.COMMAND,
+            filters.PHOTO,
+
+            photo_handler
+
+        )
+
+    )
+
+
+
+
+
+
+
+    # ==============================
+    # BUTTONS
+    # ==============================
+
+
+    app.add_handler(
+
+        CallbackQueryHandler(
+
+            button_handler
+
+        )
+
+    )
+
+
+
+
+
+
+
+    # ==============================
+    # TEXT INPUT
+    # ==============================
+
+
+    app.add_handler(
+
+        MessageHandler(
+
+            filters.TEXT & ~filters.COMMAND,
 
             text_input_handler
 
@@ -105,8 +153,14 @@ def main():
 
 
 
+
+
+
+
     print(
+
         "🚀 Convertly запущен успешно!"
+
     )
 
 
@@ -117,6 +171,8 @@ def main():
 
 
 
-if __name__ == "__main__":
+
+
+if name == "main":
 
     main()
