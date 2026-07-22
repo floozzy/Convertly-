@@ -14,6 +14,13 @@ from utils.images import (
 )
 
 
+from utils.state import (
+    set_state,
+    get_state,
+    clear_state
+)
+
+
 
 UPLOAD_DIR = "files/uploads"
 
@@ -28,7 +35,7 @@ os.makedirs(
 
 
 # =====================================
-# PHOTO HANDLER
+# PHOTO RECEIVER
 # =====================================
 
 
@@ -40,7 +47,9 @@ async def photo_handler(
 
 ):
 
-    print("🔥 PHOTO HANDLER WORKS")
+    print(
+        "🔥 PHOTO HANDLER WORKS"
+    )
 
 
     try:
@@ -49,17 +58,104 @@ async def photo_handler(
 
 
         print(
-            "USER:",
+            "PHOTO FROM USER:",
             user_id
         )
 
+
+
+        # ==========================
+        # CHECK ACTION MODE
+        # ==========================
+
+
+        if get_state(
+
+            user_id,
+
+            "waiting_convert_photo"
+
+        ):
+
+
+            clear_state(
+
+                user_id,
+
+                "waiting_convert_photo"
+
+            )
+
+
+            print(
+                "CONVERT PHOTO RECEIVED"
+            )
+
+
+            await update.message.reply_text(
+
+                "🔄 Фото получено!\n"
+                "Начинаю конвертацию..."
+
+            )
+
+
+
+            # тут позже подключим конвертер
+
+            return
+
+
+
+
+
+        if get_state(
+
+            user_id,
+
+            "waiting_watermark_photo"
+
+        ):
+
+
+            clear_state(
+
+                user_id,
+
+                "waiting_watermark_photo"
+
+            )
+
+
+            print(
+                "WATERMARK PHOTO RECEIVED"
+            )
+
+
+            await update.message.reply_text(
+
+                "💧 Фото получено!\n"
+                "Накладываю водяной знак..."
+
+            )
+
+
+            return
+
+
+
+
+
+        # ==========================
+        # NORMAL PHOTO SAVE
+        # ==========================
 
 
         photo = update.message.photo[-1]
 
 
 
-        file = await context.bot.get_file(
+        telegram_file = await context.bot.get_file(
 
             photo.file_id
 
@@ -87,7 +183,7 @@ async def photo_handler(
 
 
 
-        await file.download_to_drive(
+        await telegram_file.download_to_drive(
 
             path
 
@@ -107,8 +203,7 @@ async def photo_handler(
 
         print(
 
-            "PHOTO SAVED:",
-
+            "IMAGE SAVED:",
             path
 
         )
@@ -130,7 +225,6 @@ async def photo_handler(
         print(
 
             "PHOTO ERROR:",
-
             e
 
         )
@@ -163,6 +257,7 @@ async def image_info_action(
 
 ):
 
+
     query = update.callback_query
 
 
@@ -187,8 +282,7 @@ async def image_info_action(
 
         await query.message.reply_text(
 
-            "❌ Фото не найдено.\n"
-            "Сначала отправьте изображение."
+            "❌ Отправьте фотографию для анализа."
 
         )
 
@@ -219,15 +313,6 @@ async def image_info_action(
     except Exception as e:
 
 
-        print(
-
-            "INFO ERROR:",
-
-            e
-
-        )
-
-
         await query.message.reply_text(
 
             "❌ Ошибка анализа:\n"
@@ -241,8 +326,10 @@ async def image_info_action(
 
 
 
+
+
 # =====================================
-# CONVERT
+# CONVERT BUTTON
 # =====================================
 
 
@@ -254,6 +341,7 @@ async def image_convert_action(
 
 ):
 
+
     query = update.callback_query
 
 
@@ -265,30 +353,25 @@ async def image_convert_action(
 
 
 
-    path = get_image(
+    set_state(
 
-        user_id
+        user_id,
+
+        "waiting_convert_photo",
+
+        True
 
     )
 
 
 
-    if not path:
-
-
-        await query.message.reply_text(
-
-            "❌ Фото не найдено."
-
-        )
-
-        return
-
-
-
     await query.message.reply_text(
 
-        "🔄 Конвертация подключается."
+        "🔄 <b>Конвертация</b>\n\n"
+        "📷 Отправьте фотографию, "
+        "которую нужно конвертировать.",
+
+        parse_mode="HTML"
 
     )
 
@@ -299,7 +382,7 @@ async def image_convert_action(
 
 
 # =====================================
-# COMPRESS
+# COMPRESS BUTTON
 # =====================================
 
 
@@ -311,6 +394,7 @@ async def image_compress_action(
 
 ):
 
+
     query = update.callback_query
 
 
@@ -322,29 +406,23 @@ async def image_compress_action(
 
 
 
-    path = get_image(
+    set_state(
 
-        user_id
+        user_id,
+
+        "waiting_compress_photo",
+
+        True
 
     )
-
-
-
-    if not path:
-
-
-        await query.message.reply_text(
-
-            "❌ Фото не найдено."
-
-        )
-
-        return
 
 
 
     await query.message.reply_text(
 
-        "🗜 Сжатие подключается."
+        "🗜 <b>Сжатие</b>\n\n"
+        "📷 Отправьте фотографию для уменьшения размера.",
 
-    )
+        parse_mode="HTML"
+
+        )
