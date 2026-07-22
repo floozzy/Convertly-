@@ -16,15 +16,17 @@ from handlers.text_input import text_input_handler
 
 
 # ==========================
-# TOKEN
+# BOT TOKEN
 # ==========================
 
 TOKEN = "8831427693:AAED6ZtuPdcZnvsAvku-DPNSZ_QsBNzrc0I"
 
 
 
+
+
 # ==========================
-# MAIN
+# START
 # ==========================
 
 def main():
@@ -38,6 +40,7 @@ def main():
     # ==========================
     # COMMANDS
     # ==========================
+
 
     app.add_handler(
         CommandHandler(
@@ -57,14 +60,20 @@ def main():
 
 
     # ==========================
-    # PHOTO
+    # PHOTOS
     # ==========================
+
 
     app.add_handler(
         MessageHandler(
-            filters.PHOTO,
+            filters.PHOTO | filters.Document.IMAGE,
             photo_handler
         )
+    )
+
+
+    print(
+        "✅ PHOTO HANDLER ADDED"
     )
 
 
@@ -72,6 +81,7 @@ def main():
     # ==========================
     # BUTTONS
     # ==========================
+
 
     app.add_handler(
         CallbackQueryHandler(
@@ -82,8 +92,9 @@ def main():
 
 
     # ==========================
-    # TEXT
+    # TEXT INPUT
     # ==========================
+
 
     app.add_handler(
         MessageHandler(
@@ -99,6 +110,7 @@ def main():
     )
 
 
+
     app.run_polling()
 
 
@@ -106,5 +118,4 @@ def main():
 
 
 if __name__ == "__main__":
-
     main()
