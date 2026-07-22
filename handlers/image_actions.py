@@ -1,21 +1,13 @@
 import os
-from pathlib import Path
 
 
 from telegram import Update
+
 from telegram.ext import ContextTypes
 
 
 
 from services.image.info import image_info
-
-
-# ==========================
-# STORAGE
-# ==========================
-
-
-LAST_IMAGES = {}
 
 
 
@@ -38,24 +30,34 @@ os.makedirs(
 
 
 
+# =====================================
+# LAST USER IMAGES STORAGE
+# =====================================
+
+
+LAST_IMAGES = {}
+
+
 
 def save_last_image(
-
     user_id,
-
     path
-
 ):
 
     LAST_IMAGES[user_id] = path
 
 
+    print(
+        "SAVED IMAGE:",
+        path
+    )
+
+
+
 
 
 def get_last_image(
-
     user_id
-
 ):
 
     return LAST_IMAGES.get(
@@ -66,9 +68,9 @@ def get_last_image(
 
 
 
-# ==========================
-# PHOTO HANDLER
-# ==========================
+# =====================================
+# PHOTO RECEIVER
+# =====================================
 
 
 async def photo_handler(
@@ -80,84 +82,104 @@ async def photo_handler(
 ):
 
 
-    user_id = update.effective_user.id
+    try:
+
+
+        user_id = update.effective_user.id
+
+
+        print(
+            "PHOTO RECEIVED:",
+            user_id
+        )
 
 
 
-    photo = update.message.photo[-1]
+        photo = update.message.photo[-1]
 
 
 
-    file = await context.bot.get_file(
+        telegram_file = await context.bot.get_file(
 
-        photo.id
+            photo.file_id
 
-    )
-
-
-
-    filename = (
-
-        f"{user_id}_"
-
-        f"{photo.id}.jpg"
-
-    )
+        )
 
 
 
-    path = os.path.join(
+        filename = (
 
-        UPLOAD_DIR,
+            f"{user_id}_"
 
-        filename
+            f"{photo.file_id}.jpg"
 
-    )
-
-
-
-    await file.download_to_drive(
-
-        path
-
-    )
+        )
 
 
 
-    save_last_image(
+        path = os.path.join(
 
-        user_id,
+            UPLOAD_DIR,
 
-        path
+            filename
 
-    )
-
-
-
-    await update.message.reply_text(
-
-        "✅ Фото сохранено.\n\n"
-        "Выберите действие:",
-
-    )
+        )
 
 
 
-    print(
+        await telegram_file.download_to_drive(
 
-        "IMAGE SAVED:",
+            path
 
-        path
-
-    )
+        )
 
 
 
+        save_last_image(
+
+            user_id,
+
+            path
+
+        )
 
 
-# ==========================
-# IMAGE INFO
-# ==========================
+
+        await update.message.reply_text(
+
+            "✅ Фото получено!\n\n"
+            "Выберите действие:"
+
+        )
+
+
+
+    except Exception as e:
+
+
+        print(
+
+            "PHOTO ERROR:",
+
+            e
+
+        )
+
+
+        await update.message.reply_text(
+
+            "❌ Ошибка загрузки фото:\n"
+            f"{e}"
+
+        )
+
+
+
+
+
+# =====================================
+# IMAGE INFORMATION
+# =====================================
 
 
 async def image_info_action(
@@ -170,7 +192,6 @@ async def image_info_action(
 
 
     query = update.callback_query
-
 
 
     user_id = query.from_user.id
@@ -190,9 +211,10 @@ async def image_info_action(
 
         await query.message.reply_text(
 
-            "❌ Сначала отправьте фото."
+            "❌ Сначала отправьте фотографию."
 
         )
+
 
         return
 
@@ -220,10 +242,18 @@ async def image_info_action(
     except Exception as e:
 
 
+        print(
+
+            "INFO ERROR:",
+
+            e
+
+        )
+
+
         await query.message.reply_text(
 
-            "❌ Ошибка анализа фото:\n"
-
+            "❌ Ошибка анализа:\n"
             f"{e}"
 
         )
@@ -232,9 +262,9 @@ async def image_info_action(
 
 
 
-# ==========================
+# =====================================
 # CONVERT
-# ==========================
+# =====================================
 
 
 async def image_convert_action(
@@ -249,7 +279,6 @@ async def image_convert_action(
     query = update.callback_query
 
 
-
     user_id = query.from_user.id
 
 
@@ -267,7 +296,7 @@ async def image_convert_action(
 
         await query.message.reply_text(
 
-            "❌ Сначала отправьте фото."
+            "❌ Нет изображения."
 
         )
 
@@ -275,10 +304,9 @@ async def image_convert_action(
 
 
 
-
     await query.message.reply_text(
 
-        "🔄 Конвертация пока подключается."
+        "🔄 Конвертация будет добавлена."
 
     )
 
@@ -286,9 +314,9 @@ async def image_convert_action(
 
 
 
-# ==========================
+# =====================================
 # COMPRESS
-# ==========================
+# =====================================
 
 
 async def image_compress_action(
@@ -303,7 +331,6 @@ async def image_compress_action(
     query = update.callback_query
 
 
-
     user_id = query.from_user.id
 
 
@@ -321,7 +348,7 @@ async def image_compress_action(
 
         await query.message.reply_text(
 
-            "❌ Сначала отправьте фото."
+            "❌ Нет изображения."
 
         )
 
@@ -329,9 +356,8 @@ async def image_compress_action(
 
 
 
-
     await query.message.reply_text(
 
-        "🗜 Сжатие пока подключается."
+        "🗜 Сжатие будет добавлено."
 
-        )
+    )
