@@ -1,159 +1,93 @@
-from PIL import Image, ExifTags
+from PIL import Image
 from pathlib import Path
 import os
 
-
-def convert_gps(value):
-
-    try:
-
-        d = float(value[0][0]) / float(value[0][1])
-        m = float(value[1][0]) / float(value[1][1])
-        s = float(value[2][0]) / float(value[2][1])
-
-        return d + (m / 60) + (s / 3600)
-
-    except:
-
-        return None
-
-
-
-def get_gps(exif):
-
-    gps_info = {}
-
-    for key, value in exif.items():
-
-        name = ExifTags.GPSTAGS.get(
-            key,
-            key
-        )
-
-        gps_info[name] = value
-
-
-    if not gps_info:
-        return None
-
-
-    lat = gps_info.get(
-        "GPSLatitude"
-    )
-
-    lon = gps_info.get(
-        "GPSLongitude"
-    )
-
-
-    if lat and lon:
-
-        latitude = convert_gps(lat)
-        longitude = convert_gps(lon)
-
-        return {
-            "latitude": latitude,
-            "longitude": longitude
-        }
-
-
-    return None
+from services.image.hashes import calculate_hashes
+from services.image.metadata import (
+    get_file_dates,
+    get_metadata
+)
 
 
 
 def image_info(path):
 
-    image = Image.open(path)
-
-    file_size = round(
-        os.path.getsize(path)
-        /
-        1024
-        /
-        1024,
-        2
+    image = Image.open(
+        path
     )
 
 
     width, height = image.size
 
 
-    pixels = width * height
-
-
-    ratio = round(
-        width / height,
-        2
+    file_size = os.path.getsize(
+        path
     )
 
 
-    data = {
+    result = {
 
         "name":
             Path(path).name,
 
+
         "format":
             image.format,
+
 
         "mode":
             image.mode,
 
-        "size_mb":
-            file_size,
 
         "width":
             width,
 
+
         "height":
             height,
 
+
         "pixels":
-            pixels,
+            width * height,
+
 
         "ratio":
-            ratio,
 
-        "dpi":
-            image.info.get(
-                "dpi"
+            round(
+                width / height,
+                2
             ),
 
-        "icc":
-            bool(
-                image.info.get(
-                    "icc_profile"
-                )
+
+        "size_mb":
+
+            round(
+                file_size / 1024 / 1024,
+                2
             ),
 
-        "exif":
-            {}
+
+        "hashes":
+
+            calculate_hashes(
+                path
+            ),
+
+
+        "dates":
+
+            get_file_dates(
+                path
+            ),
+
+
+        "metadata":
+
+            get_metadata(
+                path
+            )
 
     }
 
 
-    exif_raw = image.getexif()
-
-
-    for key, value in exif_raw.items():
-
-        tag = ExifTags.TAGS.get(
-            key,
-            key
-        )
-
-        data["exif"][tag] = str(
-            value
-        )
-
-
-    gps = get_gps(
-        exif_raw
-    )
-
-
-    if gps:
-
-        data["gps"] = gps
-
-
-    return data
+    return result
